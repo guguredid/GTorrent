@@ -1,0 +1,2 @@
+this directory is for building a file according to a torrent file. the torrent_sender sends the torrent to the builder.
+then the builder uses the torrent file to connect to different people and build the file
