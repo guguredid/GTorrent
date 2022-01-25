@@ -2,7 +2,6 @@ from classes.FileHandler import FileHandler
 from classes.Server import Server
 from classes.ClientProtocol import ClientProtocol
 import queue
-import socket
 
 
 msg_q = queue.Queue()
@@ -18,5 +17,8 @@ while True:
         file_name, part = ClientProtocol.break_ask_part(info)
         file_name = file_name.rstrip()
         print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
-        #TODO: PROBLEM BECUASE SEND_MSG USE ENCODE AND BUILD_SEND_PART RETURNS BYTES
+        # CHECK THE FILE LENGTH
+        with open(file_name, 'rb') as file:
+            data = file.read()
+            print(f"DATA LET - {len(data)}")
         server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))

@@ -4,8 +4,8 @@ file for a class representing a server in the system
 from classes.ClientProtocol import ClientProtocol
 import socket
 import select
-import queue
 import threading
+
 
 class Server:
     '''
@@ -45,7 +45,6 @@ class Server:
                     # self._users[client] = address[1]
                     #TODO: NEED TO BE BY CURRENT SOCKET??
                     self._users[client] = address[0]
-                    # print(f"ADDED TO DICT {client}:{address[0]}")
                     # receive data from existing client
                     data = ''
                     try:
@@ -153,7 +152,6 @@ class Server:
         '''
         soc = self._get_soc_by_ip(ip)
         try:
-            print(f"SENDING - {msg}")
             soc.send(str(len(msg)).zfill(6).encode())
             soc.send(msg)
         except Exception as e:

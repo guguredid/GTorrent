@@ -14,5 +14,4 @@ while True:
     info = data[2:]
     if code == '07':
         tname = ServerProtocol.break_recv_torrent_name(info)
-        print(f"THE WANTED FILE - {tname}")
         server.send_msg(ip, ServerProtocol.build_send_torrent(tname))

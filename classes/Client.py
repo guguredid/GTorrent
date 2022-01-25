@@ -4,7 +4,6 @@ file for a class representing a client in the system
 import socket
 import threading
 import queue
-import select
 
 
 class Client:
@@ -38,8 +37,6 @@ class Client:
         #TODO: WHAT DO I DO IF THE SERVER IS DOWN??
         try:
             self.my_socket.connect((self.server_ip, self.server_port))
-            # timeout so I can send messages as well
-            # self.my_socket.settimeout(5)
         except Exception as e:
             print(f"[ERROR] in main loop1 - {str(e)}")
         else:
@@ -51,12 +48,9 @@ class Client:
                     try:
                         length = self.my_socket.recv(6).decode()
                     except Exception as e:
-                        # print(f"[ERROR] in main loop2222 - {str(e)}")
                         self.disconnect()
                     else:
-                        # print(f"IN CLIENT - {length}")
                         if length == '':
-                            # print("DISCONNECTED FROM SERVER!")
                             self.disconnect()
                         else:
                             msg = self.my_socket.recv(int(length))
@@ -83,16 +77,9 @@ class Client:
                 try:
                     self.my_socket.send(str(len(msg)).zfill(6).encode())
                     self.my_socket.send(msg.encode())
-                    # print("IN CLIENT SENDING")
                 except Exception as e:
-                    # print(f"[ERROR] in send_msg333 - {str(e)}")
                     self.disconnect()
                     break
-        # print('----------11', self.running)
-
-
-        # finally:
-            # soc.close()
 
     def disconnect(self):
         print("=======================DISCONNCTED")
