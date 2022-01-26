@@ -60,8 +60,9 @@ class ClientProtocol:
         return a message for the server about adding a new file to the system
         :param file_name: str
         :param data: bytes(???)
-        :return: str
+        :return: bytes
         '''
+        return f"{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
         pass
 
     @staticmethod

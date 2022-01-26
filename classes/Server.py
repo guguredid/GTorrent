@@ -53,7 +53,8 @@ class Server:
                         if length == "":
                             self._disconnect(client)
                         else:
-                            data = client.recv(int(length)).decode()
+                            data = current_socket.recv(int(length))
+                            # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop0000 - {str(e)}")
                         self._disconnect(client)
@@ -74,7 +75,8 @@ class Server:
                         if length == "":
                             self._disconnect(current_socket)
                         else:
-                            data = current_socket.recv(int(length)).decode()
+                            data = current_socket.recv(int(length))
+                            # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop - {str(e)}")
                         self._disconnect(current_socket)

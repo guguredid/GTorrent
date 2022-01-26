@@ -57,10 +57,13 @@ class ServerProtocol:
     def break_recv_file(data):
         '''
         return the file name and file data in tuple
-        :param data: str
+        :param data: bytes
         :return: tuple
         '''
-        pass
+        file_name = data[:10].decode()
+        data = data[10:]
+        return file_name, data
+        # pass
 
     @staticmethod
     def build_file_deleted(file):
