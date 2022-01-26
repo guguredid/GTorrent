@@ -138,7 +138,14 @@ print("all finished!")
 with open(f'{tname}', 'rb') as file:
     # whole_data = file.read().rstrip() # WORKS FOR PUG.JPG
     whole_data = file.read()  # WORKS FOR CAT.JPG
-    print(len(whole_data))
+    print(1111, len(whole_data))
+
+whole_data = whole_data.rstrip()
+
+# print(whole_data.count(' '.encode(), 29543-153))
+
+print(2222, len(whole_data))
+
 if encrypt(whole_data) == whole_hash:
     print('THE FILE IS OK!')
 else:

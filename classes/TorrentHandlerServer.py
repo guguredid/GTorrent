@@ -69,7 +69,6 @@ class TorrentHandlerServer:
             if len(data) != 0:
                 data += (' ' * (1024 - len(data))).encode()
             not_added = False
-
         return (data, not_added)
 
     @staticmethod

@@ -19,6 +19,7 @@ class FileHandler:
         # flag - did pad the data or not
         not_added = True
         if len(data) < 1024:
+            # if the file's length % 1024 = 0 check so we won't add spare spaces to the end of the file
             if len(data) != 0:
                 data += (' ' * (1024 - len(data))).encode()
             not_added = False

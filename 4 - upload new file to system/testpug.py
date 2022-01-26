@@ -14,6 +14,7 @@ print(29543//1024)
 with open('cat.jpg', 'rb') as f:
     data = f.read()
     print(len(data))
+    print(len(data.rstrip()))
 
 
 
