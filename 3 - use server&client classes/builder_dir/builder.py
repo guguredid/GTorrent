@@ -83,13 +83,16 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
+name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
+
 # receive the torrent file from the server first
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
-    msg = ClientProtocol.build_ask_torrent('cat.jpg')
+    # msg = ClientProtocol.build_ask_torrent('cat.jpg')
+    msg = ClientProtocol.build_ask_torrent(name)
     my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
     msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
     tdata = msg[2:]
@@ -135,22 +138,7 @@ print("all finished!")
 # check the whole hash
 with open(f'{tname}', 'rb') as file:
     whole_data = file.read()
-with open(r'C:\Users\User\PycharmProjects\GTorrent\3 - use server&client classes\sender\cat.jpg', 'rb') as f:
-    origin_data = f.read()
-
-print(f'NOW={len(whole_data)}, ORIGIN={len(origin_data)}')
-
-print(whole_hash == whole_data)
-
-# # pad the last chunk to be 1024
-# print(f"WHOLE DATA {len(whole_data)}")
-# if len(whole_data) % 1024 != 0:
-#     to_add = (' ' * (1024 - (len(whole_data) % 1024))).encode()
-#     print(f"LEN- {len(whole_data)}, {len(to_add)}")
-#     whole_data += to_add
-# print('WHOLE HASH', whole_hash)
-# print('CURRENT HASH', encrypt(whole_data))
-# if encrypt(whole_data) == whole_hash:
-#     print('THE FILE IS OK!')
-# else:
-#     print('THE FILE IS NOT OK!')
+if encrypt(whole_data) == whole_hash:
+    print('THE FILE IS OK!')
+else:
+    print('THE FILE IS NOT OK!')

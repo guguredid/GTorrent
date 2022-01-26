@@ -29,7 +29,6 @@ class TorrentHandlerServer:
         tname = f"{file_name}.torrent"
         parts_hash = TorrentHandlerServer._get_parts_hash(file_name)
         whole_hash = TorrentHandlerServer._get_whole_hash(file_name)
-        print(f"PROT2 {len(whole_hash)}")
 
         t_dict = {"name": tname,
                   "num": len(parts_hash),
@@ -39,18 +38,10 @@ class TorrentHandlerServer:
                   }
         t_to_json = json.dumps(t_dict)
 
-        # t = Torrent(tname, len(parts_hash), parts_hash, whole_hash, [ip])
-        # # turn the torrent to json
-        # t_to_json = json.dumps(t.to_dict())
-        # # save the json file
-        # with open(tname, 'w') as file:
-        #     file.write(t_to_json)
-
         # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         # delete the temporary file
         os.remove(file_name)
-        # return the json object
-        # print('IN CLASS ', t_to_json, type(t_to_json))
+
         return t_to_json
 
     @staticmethod
@@ -74,8 +65,10 @@ class TorrentHandlerServer:
         # flag - did pad the data or not
         not_added = True
         if len(data) < 1024:
-            data += (' ' * (1024 - len(data))).encode()
+            if len(data) != 0:
+                data += (' ' * (1024 - len(data))).encode()
             not_added = False
+
         return (data, not_added)
 
     @staticmethod
@@ -90,7 +83,8 @@ class TorrentHandlerServer:
         with open(path, 'rb') as file:
             while read_data:
                 data, read_data = TorrentHandlerServer._pad_chunk(file.read(1024))
-                chunks.append(data)
+                if len(data) != 0:
+                    chunks.append(data)
         return chunks
 
     @staticmethod
@@ -103,7 +97,6 @@ class TorrentHandlerServer:
         #TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         with open(file_name, 'rb') as file:
             data = file.read()
-        print(f"IN PROTOCOL {len(data)}")
         return TorrentHandlerServer._encrypt(data)
 
     @staticmethod
@@ -114,6 +107,7 @@ class TorrentHandlerServer:
         '''
         # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         chunks = TorrentHandlerServer._break_file(file_name)
+        print(f"IN GET PARTS - {len(chunks)}")
         hash_list = []
         for c in chunks:
             hash_list.append(TorrentHandlerServer._encrypt(c))

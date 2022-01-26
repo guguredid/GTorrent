@@ -18,7 +18,7 @@ while True:
         file_name = file_name.rstrip()
         print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
         # CHECK THE FILE LENGTH
-        with open(file_name, 'rb') as file:
-            data = file.read()
-            print(f"DATA LET - {len(data)}")
+        # with open(file_name, 'rb') as file:
+        #     data = file.read()
+        #     print(f"DATA LEN - {len(data)}")
         server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
