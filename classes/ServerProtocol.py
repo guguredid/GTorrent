@@ -60,7 +60,7 @@ class ServerProtocol:
         :param data: bytes
         :return: tuple
         '''
-        file_name = data[:10].decode()
+        file_name = data[:10].decode().rstrip()
         data = data[10:]
         return file_name, data
         # pass
@@ -75,14 +75,15 @@ class ServerProtocol:
         pass
 
     @staticmethod
-    def break_send_added_status(name, status):
+    def build_send_added_status(name, status):
         '''
         return a message for updating the client if the file was added to the system or not
         :param name: str
         :param status: int
         :return: str
         '''
-        pass
+        return f"05{name.ljust(10)}{status}"
+        # pass
 
     @staticmethod
     def build_send_file(file_name):

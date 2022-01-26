@@ -62,8 +62,8 @@ class ClientProtocol:
         :param data: bytes(???)
         :return: bytes
         '''
-        return f"{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
-        pass
+        return f"05{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
+        # pass
 
     @staticmethod
     def break_added_status(data):
@@ -72,7 +72,8 @@ class ClientProtocol:
         :param data: str
         :return: tuple
         '''
-        pass
+        return (data[:10].rstrip(), data[10:])
+        # pass
 
     @staticmethod
     def break_recv_new_file(data):

@@ -49,24 +49,26 @@ class Server:
                     data = ''
                     try:
                         length = client.recv(6).decode()
+                        print(f"LEN SERVER! {length}")
                         # check if there is problem/disconnect
                         if length == "":
                             self._disconnect(client)
                         else:
-                            data = current_socket.recv(int(length))
-                            # data = current_socket.recv(int(length)).decode()
+                            data = client.recv(int(length))
+                            # data = client.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop0000 - {str(e)}")
                         self._disconnect(client)
                     else:
                         # check if there is problem/disconnect
                         if data == "":
-                            self._close_client(client)
+                            self._disconnect(client)
                         # print the data we received
                         else:
                             print(f"The client send111 - {data}")
                             # put the msg into the queue for messages
-                            self.msg_q.put(f"{self._get_ip_by_socket(client)};{data}")
+                            # self.msg_q.put(f"{self._get_ip_by_socket(client)};{data}")
+                            self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
                     # receive data from existing client
                     try:
@@ -78,13 +80,14 @@ class Server:
                             data = current_socket.recv(int(length))
                             # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
-                        print(f"[ERROR] in main loop - {str(e)}")
+                        print(f"[ERROR] in main loop11111 - {str(e)}")
                         self._disconnect(current_socket)
                     else:
                         # print the data we received
                         print(f"The client send222 - {data}")
                         # put the msg into the queue for messages
-                        self.msg_q.put(f"{self._get_ip_by_socket(current_socket)};{data}")
+                        # self.msg_q.put(f"{self._get_ip_by_socket(current_socket)};{data}")
+                        self.msg_q.put((self._get_ip_by_socket(client), data))
 
     def _get_ip_by_socket(self, soc):
         '''
