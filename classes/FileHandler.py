@@ -9,7 +9,6 @@ class FileHandler:
     class for building and breaking files
     '''
 
-    #TODO: WHY NEED THE STATIC IS PRIVATE FUNCTION!!
     @staticmethod
     def _pad_chunk(data):
         '''
@@ -20,7 +19,8 @@ class FileHandler:
         # flag - did pad the data or not
         not_added = True
         if len(data) < 1024:
-            data += (' ' * (1024 - len(data))).encode()
+            if len(data) != 0:
+                data += (' ' * (1024 - len(data))).encode()
             not_added = False
         return (data, not_added)
 

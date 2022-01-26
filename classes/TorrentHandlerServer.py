@@ -25,6 +25,8 @@ class TorrentHandlerServer:
 
         # create Torrent object
         tname = f"{file_name}.torrent"
+        if 'temp' in tname:
+            tname = tname.replace('temp', '')
         parts_hash = TorrentHandlerServer._get_parts_hash(file_name)
         whole_hash = TorrentHandlerServer._get_whole_hash(file_name)
 

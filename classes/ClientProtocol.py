@@ -62,7 +62,8 @@ class ClientProtocol:
         :param data: bytes(???)
         :return: bytes
         '''
-        return f"05{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
+        # return f"05{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
+        return f"05{file_name.ljust(10)}".encode() + data
         # pass
 
     @staticmethod
@@ -131,11 +132,12 @@ class ClientProtocol:
     def break_ask_part(data):
         '''
         return a tuple with the file and the part number
-        :param data: str
+        :param data: bytes
         :return: tuple
         '''
         # return (data[2:12].decode(), int(data[12:16]), data[16:])
-        return (data[:10], int(data[10:]))
+        data = data.decode()
+        return data[:10], int(data[10:])
         # pass
 
     @staticmethod

@@ -85,76 +85,61 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
-FILENAME = 'pug.jpg'
+name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
 
-with open(FILENAME, 'rb') as f:
-    data = f.read()
-
-print(len(data))
-
-# name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
-#
-# # receive the torrent file from the server first
+# receive the torrent file from the server first
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 try:
-    my_socket.connect((TORRENT_SENDER_ADDRESS, 4000))
-    msg = ClientProtocol.build_add_file_to_system(FILENAME, data)
-    my_socket.send(f"{str(len(msg)).zfill(6)}".encode())
-    my_socket.send(msg)
-    answer = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+    my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
+    msg = ClientProtocol.build_ask_torrent(name)
+    my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
+    msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+    tdata = msg[2:]
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 
-print("SENT!")
-code = answer[:2]
-info = answer[2:]
-if code == '05':
-    file_name, status = ClientProtocol.break_added_status(info)
-    if status == '1':
-        print("FILE ADDED SUCCESSFULLY!")
-    else:
-        print("FILE WAS NOT ADDED")
-#
-# t = Torrent(tdata)
-# # data from the torrent file
-# tname = t.get_name().replace('.torrent', '')
-# hash_list = t.get_parts_hash()
-# chunks_num = len(hash_list)
-# whole_hash = t.get_hash()
-# ip_list = t.get_ip_list()
-#
-# # list of the chunks still needed
-# chunks_to_write = [i for i in range(1, chunks_num+1)]
-# # list of the chunks being taken care of
-# chunks_busy = []
-# # event object
-# file_event = threading.Event()
-# file_event.set()
-#
-# msg_q = queue.Queue()
-#
-# threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
-#
-# # list of the threads building the file
-# thread_list = []
-# # create the threads for getting the file's parts
-# for i in range(len(ip_list)):
-#     thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i+1, msg_q,)))
-#
-# for thread in thread_list:
-#     thread.start()
-# # wait for all the threads to finish
-# for thread in thread_list:
-#     thread.join()
-#
-# print("all finished!")
-#
-# # check the whole hash
-# with open(f'{tname}', 'rb') as file:
-#     whole_data = file.read()
-# if encrypt(whole_data) == whole_hash:
-#     print('THE FILE IS OK!')
-# else:
-#     print('THE FILE IS NOT OK!')
+t = Torrent(tdata)
+# data from the torrent file
+tname = t.get_name().replace('.torrent', '')
+hash_list = t.get_parts_hash()
+chunks_num = len(hash_list)
+whole_hash = t.get_hash()
+ip_list = t.get_ip_list()
+
+# list of the chunks still needed
+chunks_to_write = [i for i in range(1, chunks_num+1)]
+# list of the chunks being taken care of
+chunks_busy = []
+# event object
+file_event = threading.Event()
+file_event.set()
+
+msg_q = queue.Queue()
+
+threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+
+# list of the threads building the file
+thread_list = []
+# create the threads for getting the file's parts
+for i in range(len(ip_list)):
+    thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i+1, msg_q,)))
+
+for thread in thread_list:
+    thread.start()
+# wait for all the threads to finish
+for thread in thread_list:
+    thread.join()
+
+print("all finished!")
+
+# check the whole hash
+with open(f'{tname}', 'rb') as file:
+    # whole_data = file.read().rstrip() # WORKS FOR PUG.JPG
+    whole_data = file.read()  # WORKS FOR CAT.JPG
+    print(len(whole_data))
+if encrypt(whole_data) == whole_hash:
+    print('THE FILE IS OK!')
+else:
+    print('THE FILE IS NOT OK!')
