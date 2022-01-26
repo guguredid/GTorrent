@@ -14,7 +14,7 @@ class Torrent:
         initializing a torrent object
         :param json_str: str
         '''
-        # convert the data from string to dicionary
+        # convert the data from string to dictionary
         t_dict = ast.literal_eval(json_str)
 
         # data from the torrent file

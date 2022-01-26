@@ -64,7 +64,6 @@ def handle_share(ip, id, q):
         if current_chunk not in chunks_busy:
             if len(chunks_to_write) > 0:
                 current_chunk = chunks_to_write.pop(0)
-                # chunks_to_write.remove(current_chunk)
                 chunks_busy.append(current_chunk)
             elif len(chunks_busy) > 0:
                 current_chunk = chunks_busy[0]
@@ -94,7 +93,6 @@ TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
-    # msg = ClientProtocol.build_ask_torrent('cat.jpg')
     msg = ClientProtocol.build_ask_torrent(name)
     my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
     msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()

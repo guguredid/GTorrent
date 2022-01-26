@@ -1,0 +1,2 @@
+in this phase I used the protocols and implemented the server and client classes, and used them to transfer a file
+via the internet. Also I made sure 2 clients can share and download a file at the same time.
