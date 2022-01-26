@@ -44,12 +44,15 @@ def handle_msg_q(q):
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
                 file_event.set()
+            else:
+                print('THE HASH IS NOT OKAY!')
 
 
 def handle_share(ip, id, q):
     '''
     handles the connection with one sharing user
-    :param soc: Socket
+    :param ip: str
+    :param id: int
     :param q: Queue
     :return: None
     '''
@@ -119,7 +122,7 @@ msg_q = queue.Queue()
 
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
 
-#
+# list of the threads building the file
 thread_list = []
 # create the threads for getting the file's parts
 for i in range(len(ip_list)):
@@ -132,8 +135,6 @@ for thread in thread_list:
     thread.join()
 
 print("all finished!")
-
-#TODO: DOES NOT WORK WELL
 
 # check the whole hash
 with open(f'{tname}', 'rb') as file:
