@@ -98,12 +98,17 @@ print(len(data))
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
+file_socket = socket.socket()
 try:
-    my_socket.connect((TORRENT_SENDER_ADDRESS, 4000))
+    my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
+    # receive port for the file's server
+    file_port = int(my_socket.recv(4).decode())
+    print(f"RECEIVED {file_port} AS A PORT!")
+    file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
     msg = ClientProtocol.build_add_file_to_system(FILENAME, data)
-    my_socket.send(f"{str(len(msg)).zfill(6)}".encode())
-    my_socket.send(msg)
-    answer = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+    file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
+    file_socket.send(msg)
+    answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 

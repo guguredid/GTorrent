@@ -2,10 +2,10 @@
 file for a class representing a server in the system
 '''
 from classes.ClientProtocol import ClientProtocol
-from variable import general_port
 import socket
 import select
 import threading
+import random
 
 
 class Server:
@@ -18,14 +18,16 @@ class Server:
         initializing a server with a specific port and queue for messages
         :param port: int
         :param q: Queue
+        :param type: str
         '''
         self.port = port
         self.msg_q = q
         self._users = {}  # socket: ip
         self.server_socket = socket.socket()
         self.type = type
+        # if this is the main server, create a list of used ports for files servers
         if self.type == 'main':
-            self.used_ports = []
+            self._used_ports = [8000, 1000]
 
         threading.Thread(target=self._main_loop).start()
 
@@ -46,36 +48,37 @@ class Server:
                 if current_socket is self.server_socket:
                     client, address = self.server_socket.accept()
                     print(f'{address[0]} - connected')
-                    # self._users[client] = address[1]
-                    #TODO: NEED TO BE BY CURRENT SOCKET??
                     self._users[client] = address[0]
 
-                    # check if the main server - if
+                    # check if the main server
                     if self.type == 'main':
-                        # create server for sending files
-                        pass
+                        # generate port for sending files' server for the client
+                        port = 1000
+                        while port in self._used_ports:
+                            port = random.randint(2000, 2101)
+                        print(f'PORT {port} IS TAKEN!!!')
+                        self.msg_q.put((self._get_ip_by_socket(client), f"20{port}".encode()))
 
-                    # receive data from existing client
-                    data = ''
-                    try:
-                        length = client.recv(6).decode()
-                        # print(f"LEN SERVER! {length}")
-                        # check if there is problem/disconnect
-                        if length == "":
-                            self._disconnect(client)
-                        else:
-                            data = client.recv(int(length))
-                            # data = client.recv(int(length)).decode()
-                    except Exception as e:
-                        print(f"[ERROR] in main loop0000 - {str(e)}")
-                        self._disconnect(client)
                     else:
-                        # check if there is problem/disconnect
-                        if data == "":
+                        # receive data from existing client
+                        data = ''
+                        try:
+                            length = client.recv(6).decode()
+                            # check if there is problem/disconnect
+                            if length == "":
+                                self._disconnect(client)
+                            else:
+                                data = client.recv(int(length))
+                        except Exception as e:
+                            print(f"[ERROR] in main loop0000 - {str(e)}")
                             self._disconnect(client)
-                        # push the data we received to the queue
                         else:
-                            self.msg_q.put((self._get_ip_by_socket(client), data))
+                            # check if there is problem/disconnect
+                            if data == "":
+                                self._disconnect(client)
+                            # push the data we received to the queue
+                            else:
+                                self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
                     print(444444, len(self._users.keys()))
                     # receive data from existing client

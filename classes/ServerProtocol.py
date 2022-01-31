@@ -117,6 +117,15 @@ class ServerProtocol:
         # pass
 
     @staticmethod
+    def build_send_port(port):
+        '''
+        return a message for sending a port for a client for his file's server
+        :param port: int
+        :return: str
+        '''
+        return f"20{str(port).zfill(4)}"
+
+    @staticmethod
     def build_update_ip(ip, status):
         '''
         return a message for updating a client that a new ip was added\removed to the sharing clients

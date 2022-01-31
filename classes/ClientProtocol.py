@@ -165,6 +165,15 @@ class ClientProtocol:
         return f"11{file_name.ljust(10)}{str(num).zfill(4)}".encode() + data
 
     @staticmethod
+    def break_recv_port(data):
+        '''
+        return the port sent for client
+        :param data: bytes
+        :return: int
+        '''
+        return data[2:].decode()
+
+    @staticmethod
     def build_disconnect():
         '''
         return a message for disconnecting from a sharer
