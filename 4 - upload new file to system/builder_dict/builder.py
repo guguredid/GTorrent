@@ -91,8 +91,13 @@ name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
+file_socket = socket.socket()
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
+    # receive port for the file's server
+    file_port = int(my_socket.recv(4).decode())
+    print(f"RECEIVED {file_port} AS A PORT!")
+    file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
     msg = ClientProtocol.build_ask_torrent(name)
     my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
     msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
