@@ -56,7 +56,7 @@ class Server:
                         # generate port for sending files' server for the client
                         port = 1000
                         while port in self._used_ports.values():
-                            port = random.randint(2000, 2101)
+                            port = random.randint(2001, 2101)
                         self._used_ports[client] = port
                         msg = ServerProtocol.build_send_port(port)
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))

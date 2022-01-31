@@ -85,19 +85,67 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
-name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
-
-# receive the torrent file from the server first
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
+
+# event object
+file_event = threading.Event()
+file_event.set()
+# queue for messages from all connections
+msg_q = queue.Queue()
+
+threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+
+name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
+
+# connect the sockets to the server (1 for messages, 1 for sending files
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
     # receive port for the file's server
-    file_port = int(my_socket.recv(4).decode())
+    file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
     print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
+except Exception as e:
+    sys.exit('[ERROR] in connecting to server')
+
+#TODO: DELETE LATER!
+FILENAME = 'pug.jpg'
+
+with open(FILENAME, 'rb') as f:
+    data = f.read()
+
+# # receive the torrent file from the server first
+# # TORRENT_SENDER_ADDRESS = "192.168.4.83"
+# TORRENT_SENDER_ADDRESS = "127.0.0.1"
+# my_socket = socket.socket()
+# file_socket = socket.socket()
+# UPLOADING NEW FILE TO THE SYSTEM
+try:
+    msg = ClientProtocol.build_add_file_to_system(FILENAME, data)
+    file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
+    file_socket.send(msg)
+    answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
+except Exception as e:
+    sys.exit('[ERROR] in connecting to server')
+
+code = answer[:2]
+info = answer[2:]
+if code == '05':
+    file_name, status = ClientProtocol.break_added_status(info)
+    if status == '1':
+        print("FILE ADDED SUCCESSFULLY!")
+    else:
+        print("FILE WAS NOT ADDED")
+
+# DOWNLOADING A FILE FROM THE SYSTEM
+try:
+    # my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
+    # # receive port for the file's server
+    # file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
+    # print(f"RECEIVED {file_port} AS A PORT!")
+    # file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
     msg = ClientProtocol.build_ask_torrent(name)
     my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
     msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
@@ -117,13 +165,13 @@ ip_list = t.get_ip_list()
 chunks_to_write = [i for i in range(1, chunks_num+1)]
 # list of the chunks being taken care of
 chunks_busy = []
-# event object
-file_event = threading.Event()
-file_event.set()
-
-msg_q = queue.Queue()
-
-threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+# # event object
+# file_event = threading.Event()
+# file_event.set()
+#
+# msg_q = queue.Queue()
+#
+# threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
 
 # list of the threads building the file
 thread_list = []
@@ -145,7 +193,7 @@ with open(f'{tname}', 'rb') as file:
     whole_data = file.read()  # WORKS FOR CAT.JPG
     print(1111, len(whole_data))
 
-whole_data = whole_data.rstrip()
+# whole_data = whole_data.rstrip()
 
 # print(whole_data.count(' '.encode(), 29543-153))
 
