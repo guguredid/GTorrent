@@ -69,7 +69,7 @@ while True:
     elif code == '20'.encode():
         port = int(info.decode())
         print(f"SENDING {ip} PORT {port}")
-        server_by_ip[ip] = Server(port, files_q)
+        server_by_ip[ip] = Server(port, files_q, 'file_server')
         server.send_msg(ip, str(port))
 
 
