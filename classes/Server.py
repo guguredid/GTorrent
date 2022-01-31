@@ -2,6 +2,7 @@
 file for a class representing a server in the system
 '''
 from classes.ClientProtocol import ClientProtocol
+from variable import general_port
 import socket
 import select
 import threading
@@ -12,7 +13,7 @@ class Server:
     class representing a server in the system
     '''
 
-    def __init__(self, port, q):
+    def __init__(self, port, q, type='main'):
         '''
         initializing a server with a specific port and queue for messages
         :param port: int
@@ -22,6 +23,9 @@ class Server:
         self.msg_q = q
         self._users = {}  # socket: ip
         self.server_socket = socket.socket()
+        self.type = type
+        if self.type == 'main':
+            self.used_ports = []
 
         threading.Thread(target=self._main_loop).start()
 
@@ -45,6 +49,12 @@ class Server:
                     # self._users[client] = address[1]
                     #TODO: NEED TO BE BY CURRENT SOCKET??
                     self._users[client] = address[0]
+
+                    # check if the main server - if
+                    if self.type == 'main':
+                        # create server for sending files
+                        pass
+
                     # receive data from existing client
                     data = ''
                     try:
@@ -63,18 +73,17 @@ class Server:
                         # check if there is problem/disconnect
                         if data == "":
                             self._disconnect(client)
-                        # print the data we received
+                        # push the data we received to the queue
                         else:
-                            # print(f"The client send111 - {data}")
-                            # put the msg into the queue for messages
-                            # self.msg_q.put(f"{self._get_ip_by_socket(client)};{data}")
                             self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
+                    print(444444, len(self._users.keys()))
                     # receive data from existing client
                     try:
                         length = current_socket.recv(6).decode()
                         # check if there is problem/disconnect
                         if length == "":
+                            print("USER DISCONNECTED!!!! 222222222222222222")
                             self._disconnect(current_socket)
                         else:
                             data = current_socket.recv(int(length))
@@ -83,11 +92,10 @@ class Server:
                         print(f"[ERROR] in main loop11111 - {str(e)}")
                         self._disconnect(current_socket)
                     else:
-                        # print the data we received
-                        # print(f"The client send222 - {data}")
-                        # put the msg into the queue for messages
-                        # self.msg_q.put(f"{self._get_ip_by_socket(current_socket)};{data}")
-                        self.msg_q.put((self._get_ip_by_socket(client), data))
+                        print(3333333, len(self._users.keys()))
+                        # if the client did not disconnect, push the msg to the queue
+                        if client in self._users.keys():
+                            self.msg_q.put((self._get_ip_by_socket(client), data))
 
     def _get_ip_by_socket(self, soc):
         '''
@@ -103,11 +111,20 @@ class Server:
         :param ip: str
         :return: Socket
         '''
+        print(f"IP - {ip}")
+        # print(f"DICT: {self._users}")
         soc = None
         for user_soc, user_ip in self._users.items():
             if user_ip == ip:
                 soc = user_soc
                 break
+
+        # for user_soc, x in self._users.items():
+        #     print(f"CURRENT IP: {self._users[user_soc]}")
+        #     if self._users[user_soc] == ip:
+        #         soc = user_soc
+        #         break
+        print(f"SOCKET: {soc}")
         return soc
 
     def recv_file(self, client_soc):
@@ -130,6 +147,8 @@ class Server:
         :param msg: str
         :return: None
         '''
+        print(f"DICT: {self._users}")
+
         soc = self._get_soc_by_ip(ip)
         try:
             soc.send(str(len(msg)).zfill(6).encode())

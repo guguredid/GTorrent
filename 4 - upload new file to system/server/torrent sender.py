@@ -20,10 +20,11 @@ def handle_files(q):
 
         # receive new file to the system
         if code == '05'.encode():
+            print("HERE AGAIN!!!!")
             # receive new file
             f_name, data = ServerProtocol.break_recv_file(info)
 
-            print(f"RECEIVED FILE {f_name} AND THE DATA {len(data)}")
+            print(f"RECEIVED FILE {f_name} FROM {ip} AND THE DATA {len(data)}")
 
             # save temporarily and create json file to it
 
@@ -35,9 +36,11 @@ def handle_files(q):
 
             # update if managed to do it or not
             if os.path.isfile(f'{f_name}.json'):
-                server.send_msg(ip, ServerProtocol.build_send_added_status(f_name, 1))
+                print("SENDING OK")
+                files_server.send_msg(ip, ServerProtocol.build_send_added_status(f_name, 1))
             else:
-                server.send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
+                print("SENDING NOT OK")
+                files_server.send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
 
 
 files_q = queue.Queue()
