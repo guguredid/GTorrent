@@ -123,7 +123,7 @@ class ServerProtocol:
         :param port: int
         :return: str
         '''
-        return f"20{str(port).zfill(4)}"
+        return f"20{port}"
 
     @staticmethod
     def build_update_ip(ip, status):

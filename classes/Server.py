@@ -2,6 +2,7 @@
 file for a class representing a server in the system
 '''
 from classes.ClientProtocol import ClientProtocol
+from classes.ServerProtocol import ServerProtocol
 import socket
 import select
 import threading
@@ -27,7 +28,7 @@ class Server:
         self.type = type
         # if this is the main server, create a list of used ports for files servers
         if self.type == 'main':
-            self._used_ports = [8000, 1000]
+            self._used_ports = {'test': 1000}   # socket: port
 
         threading.Thread(target=self._main_loop).start()
 
@@ -54,11 +55,11 @@ class Server:
                     if self.type == 'main':
                         # generate port for sending files' server for the client
                         port = 1000
-                        while port in self._used_ports:
+                        while port in self._used_ports.values():
                             port = random.randint(2000, 2101)
-                        print(f'PORT {port} IS TAKEN!!!')
-                        self.msg_q.put((self._get_ip_by_socket(client), f"20{port}".encode()))
-
+                        self._used_ports[client] = port
+                        msg = ServerProtocol.build_send_port(port)
+                        self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                     else:
                         # receive data from existing client
                         data = ''
@@ -86,7 +87,7 @@ class Server:
                         length = current_socket.recv(6).decode()
                         # check if there is problem/disconnect
                         if length == "":
-                            print("USER DISCONNECTED!!!! 222222222222222222")
+                            # print("USER DISCONNECTED!!!! 222222222222222222")
                             self._disconnect(current_socket)
                         else:
                             data = current_socket.recv(int(length))
@@ -95,7 +96,7 @@ class Server:
                         print(f"[ERROR] in main loop11111 - {str(e)}")
                         self._disconnect(current_socket)
                     else:
-                        print(3333333, len(self._users.keys()))
+                        # print(3333333, len(self._users.keys()))
                         # if the client did not disconnect, push the msg to the queue
                         if client in self._users.keys():
                             self.msg_q.put((self._get_ip_by_socket(client), data))
@@ -114,20 +115,11 @@ class Server:
         :param ip: str
         :return: Socket
         '''
-        print(f"IP - {ip}")
-        # print(f"DICT: {self._users}")
         soc = None
         for user_soc, user_ip in self._users.items():
             if user_ip == ip:
                 soc = user_soc
                 break
-
-        # for user_soc, x in self._users.items():
-        #     print(f"CURRENT IP: {self._users[user_soc]}")
-        #     if self._users[user_soc] == ip:
-        #         soc = user_soc
-        #         break
-        print(f"SOCKET: {soc}")
         return soc
 
     def recv_file(self, client_soc):
@@ -150,8 +142,6 @@ class Server:
         :param msg: str
         :return: None
         '''
-        print(f"DICT: {self._users}")
-
         soc = self._get_soc_by_ip(ip)
         try:
             soc.send(str(len(msg)).zfill(6).encode())
@@ -193,4 +183,6 @@ class Server:
         '''
         print(f"{self._users[client_socket]} - disconnected")
         del self._users[client_socket]
+        if self.type == 'main':
+            del self._used_ports[client_socket]
         client_socket.close()

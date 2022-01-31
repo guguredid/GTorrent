@@ -58,15 +58,19 @@ while True:
     code = data[:2]
     info = data[2:]
 
+    print(f"RECEIVED FROM {ip} DATA {info}")
+
     # send torrent file
     if code == '07'.encode():
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
         server.send_msg(ip, ServerProtocol.build_send_torrent(tname))
+
     # create file upload server
     elif code == '20'.encode():
         port = int(info.decode())
+        print(f"SENDING {ip} PORT {port}")
         server_by_ip[ip] = Server(port, files_q)
-        server.send_msg(ip, ServerProtocol.build_send_port(port))
+        server.send_msg(ip, str(port))
 
 
 
