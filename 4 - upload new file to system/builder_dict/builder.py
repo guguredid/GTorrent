@@ -2,6 +2,7 @@ from classes.FileHandler import FileHandler
 from classes.Torrent import Torrent
 from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
+from classes.Server import Server
 import socket
 import threading
 import sys
@@ -29,9 +30,18 @@ def handle_msg_q(q):
     while True:
         ip, curr_msg = q.get()
 
-        code = curr_msg[:2].decode()
+        code = data[:2]
+        info = data[2:]
 
-        if code == '11':
+        # someone asked for file part
+        if code == '10'.encode():
+            file_name, part = ClientProtocol.break_ask_part(info)
+            file_name = file_name.rstrip()
+            print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
+            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
+
+        # received a file part from someone
+        elif code == '11':
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
                 # wait until can update the file
@@ -69,7 +79,6 @@ def handle_share(ip, id, q):
                 current_chunk = chunks_busy[0]
             # connect to the client - SHOULD BE HERE OR IN THE MAIN LOOP???
             try:
-                #TODO: SET TIMEOUT WITH soc.settimeout(...)???
                 msg = ClientProtocol.build_ask_part(tname, current_chunk)
                 client.send_msg(msg)
             except TimeoutError as e:
@@ -95,24 +104,27 @@ file_event = threading.Event()
 file_event.set()
 # queue for messages from all connections
 msg_q = queue.Queue()
+# server for sending files' parts
+server = Server(2000, msg_q)
 
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
 
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
 
-# connect the sockets to the server (1 for messages, 1 for sending files
+# connect the sockets to the server (1 for messages, 1 for sending files)
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
     # receive port for the file's server
     file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
     print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
-    #TODO: RECEIVE LIST OF FILES IN THE SYSTEM
+    # receive list of the files currently in the system
     files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
     files_in_system = ClientProtocol.break_files_in_system(files_in_system)
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 
+# upload a file to the system
 if action.lower() == 'u':
     upload_name = input("enter the name of the file you want: ")
     with open(upload_name, 'rb') as f:
@@ -135,10 +147,13 @@ if action.lower() == 'u':
             else:
                 print("FILE WAS NOT ADDED")
 
+# download a file to the system
 elif action.lower() == 'd':
     files_in_system = [file.replace('.json', '') for file in files_in_system]
     print(f"The files available in the system: {', '.join(files_in_system)}")
     download_name = input('Enter the name of the file you want to download: ')
+    while download_name not in files_in_system:
+        download_name = input("Please enter a file that's in the system: ")
 
     try:
         msg = ClientProtocol.build_ask_torrent(download_name)

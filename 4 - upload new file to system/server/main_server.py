@@ -32,11 +32,11 @@ def handle_files(q):
             with open(f"temp{f_name}", 'wb') as f:
                 f.write(data)
             temp_torrent = TorrentHandlerServer.build_torrent(f"temp{f_name}", ip)
-            with open(f'{f_name}.json', 'w') as file:
+            with open(f'C:\GTorrent\{f_name}.json', 'w') as file:
                 file.write(temp_torrent)
 
             # update if managed to do it or not
-            if os.path.isfile(f'{f_name}.json'):
+            if os.path.isfile(f'C:\GTorrent\{f_name}.json'):
                 # add the torrent to the db
                 added = local_db.add_torrent(f'{f_name}.json')
                 if added:
@@ -53,6 +53,9 @@ def handle_files(q):
 files_q = queue.Queue()
 server_by_ip = {}   # dict for all file uploading servers (ip : Server)
 
+# root to the torrents directory
+TORRENT_ROOT = 'C:\GTorrent'
+
 msg_q = queue.Queue()
 server = Server(3000, msg_q)
 
@@ -60,9 +63,13 @@ threading.Thread(target=handle_files, args=(files_q, )).start()
 
 # create the database
 db = DB("GTorrent")
-db.delete_torrent('')
+# db.delete_torrent('')
 
 print(f"FILES IN DB: {db.get_torrents()}")
+
+#TODO: CREATE C:\GTorrent IF DOES NOT EXIST
+if not os.path.exists(TORRENT_ROOT):
+    os.mkdir(TORRENT_ROOT)
 
 # main loop
 while True:
@@ -82,7 +89,7 @@ while True:
     # send torrent file
     elif code == '07'.encode():
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
-        server.send_msg(ip, ServerProtocol.build_send_torrent(tname))
+        server.send_msg(ip, ServerProtocol.build_send_torrent(f"C:\GTorrent\{tname}"))
 
     # create file upload server
     elif code == '20'.encode():
