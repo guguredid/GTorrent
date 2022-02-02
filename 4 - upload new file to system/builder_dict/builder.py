@@ -8,6 +8,8 @@ import threading
 import sys
 import hashlib
 import queue
+import win32file
+import win32con
 
 
 def encrypt(data):
@@ -38,7 +40,7 @@ def handle_msg_q(q):
             file_name, part = ClientProtocol.break_ask_part(info)
             file_name = file_name.rstrip()
             print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
-            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
+            server.send_part(ip, ClientProtocol.build_send_part(f'{FILES_ROOT}\{file_name}', part, FileHandler.get_part(file_name, part)))
 
         # received a file part from someone
         elif code == '11':
@@ -94,10 +96,61 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
+def monitor_dir():
+    '''
+    monitors the directory where the files are saved, and sends messages for the server when needed (created\deleted file)
+    :return: None
+    '''
+    hDir = win32file.CreateFile(
+        FILES_ROOT,
+        win32con.FILE_SHARE_READ,
+        win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE,
+        None,
+        win32con.OPEN_EXISTING,
+        win32con.FILE_FLAG_BACKUP_SEMANTICS,
+        None
+    )
+
+    # monitor the directory
+    while True:
+
+        new_log = ''
+
+        results = win32file.ReadDirectoryChangesW(
+            hDir,
+            1024,
+            True,
+            win32con.FILE_NOTIFY_CHANGE_FILE_NAME |
+            win32con.FILE_NOTIFY_CHANGE_DIR_NAME |
+            win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
+            win32con.FILE_NOTIFY_CHANGE_SIZE |
+            win32con.FILE_NOTIFY_CHANGE_LAST_WRITE |
+            win32con.FILE_NOTIFY_CHANGE_SECURITY,
+            None,
+            None
+        )
+
+        # 1 : created file
+        if results[0][0] == 1:
+            new_log = f'Created file - {results[0][1]}\n'
+            msg = ClientProtocol.build_add_file()
+            my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
+        # 2 : deleted file
+        elif results[0][0] == 2:
+            new_log = f'Deleted file - {results[0][1]}\n'
+            msg = ClientProtocol.build_send_deleted_file()
+            my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
+
+        # print the LOG
+        print(new_log, end='')
+
+
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
+
+FILES_ROOT = 'C:\GTorrent'
 
 # event object
 file_event = threading.Event()

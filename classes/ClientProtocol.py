@@ -43,7 +43,8 @@ class ClientProtocol:
         :param file_name: str
         :return: str
         '''
-        pass
+        return f"02{file_name.ljust(10)}"
+        # pass
 
     @staticmethod
     def build_add_file(file_name):
@@ -52,9 +53,9 @@ class ClientProtocol:
         :param file_name: str
         :return: str
         '''
-        pass
+        return f"03{file_name.ljust(10)}"
+        # pass
 
-    #TODO: DO I SPLIT THE MESSAGE OR WHAT
     @staticmethod
     def build_add_file_to_system(file_name, data):
         '''
