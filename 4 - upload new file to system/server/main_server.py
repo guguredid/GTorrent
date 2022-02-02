@@ -1,3 +1,4 @@
+from classes.DB import DB
 from classes.Server import Server
 from classes.ServerProtocol import ServerProtocol
 from classes.TorrentHandlerServer import TorrentHandlerServer
@@ -13,6 +14,7 @@ def handle_files(q):
     :return: None
     '''
     global server_by_ip
+    local_db = DB("GTorrent")
     while True:
         ip, data = q.get()
 
@@ -35,8 +37,14 @@ def handle_files(q):
 
             # update if managed to do it or not
             if os.path.isfile(f'{f_name}.json'):
-                print("SENDING OK")
-                server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 1))
+                # add the torrent to the db
+                added = local_db.add_torrent(f'{f_name}.json')
+                if added:
+                    print("SENDING OK")
+                    server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 1))
+                else:
+                    print("SENDING NOT OK")
+                    server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
             else:
                 print("SENDING NOT OK")
                 server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
@@ -44,13 +52,19 @@ def handle_files(q):
 
 files_q = queue.Queue()
 server_by_ip = {}   # dict for all file uploading servers (ip : Server)
-# files_server = Server(4000, files_q)
 
 msg_q = queue.Queue()
 server = Server(3000, msg_q)
 
 threading.Thread(target=handle_files, args=(files_q, )).start()
 
+# create the database
+db = DB("GTorrent")
+db.delete_torrent('')
+
+print(f"FILES IN DB: {db.get_torrents()}")
+
+# main loop
 while True:
     # receive the message from the server
     ip, data = msg_q.get()
@@ -60,8 +74,13 @@ while True:
 
     print(f"RECEIVED FROM {ip} DATA {info}")
 
+    # send files in the system
+    if code == '01'.encode():
+        files_in_system = db.get_torrents()
+        server.send_msg(ip, ServerProtocol.build_send_file_names(files_in_system))
+
     # send torrent file
-    if code == '07'.encode():
+    elif code == '07'.encode():
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
         server.send_msg(ip, ServerProtocol.build_send_torrent(tname))
 

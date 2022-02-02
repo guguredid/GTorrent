@@ -9,13 +9,14 @@ class ClientProtocol:
     '''
 
     @staticmethod
-    def break_file_in_system(data):
+    def break_files_in_system(data):
         '''
-        return a list of files in the system, recevied from the server
+        return a list of files in the system, received from the server
         :param data: str
         :return: list
         '''
-        pass
+        return data[2:].split(';')
+        # pass
 
     @staticmethod
     def build_send_file_names(files):

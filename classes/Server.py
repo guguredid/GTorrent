@@ -3,6 +3,7 @@ file for a class representing a server in the system
 '''
 from classes.ClientProtocol import ClientProtocol
 from classes.ServerProtocol import ServerProtocol
+from classes.DB import DB
 import socket
 import select
 import threading
@@ -29,6 +30,7 @@ class Server:
         # if this is the main server, create a list of used ports for files servers
         if self.type == 'main':
             self._used_ports = {'test': 1000}   # socket: port
+            # self.my_db = DB("Gtorrent")
 
         threading.Thread(target=self._main_loop).start()
 
@@ -60,6 +62,8 @@ class Server:
                         self._used_ports[client] = port
                         msg = ServerProtocol.build_send_port(port)
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
+                        # send the client a list of the files in the server
+                        self.msg_q.put((self._get_ip_by_socket(client), '01'.encode()))
                     else:
                         # receive data from existing client
                         data = ''

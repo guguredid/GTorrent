@@ -12,10 +12,11 @@ class ServerProtocol:
     def build_send_file_names(names):
         '''
         return a message for sending system's files names to a client
-        :param names: str
+        :param names: list
         :return: str
         '''
-        pass
+        msg = ';'.join(names)
+        return f"01{msg}"
 
     @staticmethod
     def break_recv_file_names(data):

@@ -76,6 +76,19 @@ class DB:
             self.con.commit()
         return flag
 
+    def get_torrents(self):
+        '''
+        returns a list of the torrent files in the system
+        :return: list
+        '''
+        cmd = f"SELECT name FROM {self.tbl_name} WHERE {1==1}"
+        self.cursor.execute(cmd)
+        data = self.cursor.fetchall()
+        names_list = []
+        for tup in data:
+            names_list.append(tup[0])
+        return names_list
+
     def close_db(self):
         '''
         close connection to the db

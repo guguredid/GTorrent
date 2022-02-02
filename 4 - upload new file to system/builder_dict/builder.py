@@ -22,7 +22,7 @@ def encrypt(data):
 
 def handle_msg_q(q):
     '''
-    handles the messages queue
+    handles the messages queue (for sending file parts)
     :param q: Queue
     :return: None
     '''
@@ -98,7 +98,7 @@ msg_q = queue.Queue()
 
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
 
-name = input("ENTER THE NAME OF THE FILE YOU WANT: ")
+action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
 
 # connect the sockets to the server (1 for messages, 1 for sending files
 try:
@@ -107,99 +107,76 @@ try:
     file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
     print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
+    #TODO: RECEIVE LIST OF FILES IN THE SYSTEM
+    files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+    files_in_system = ClientProtocol.break_files_in_system(files_in_system)
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 
-#TODO: DELETE LATER!
-FILENAME = 'pug.jpg'
+if action.lower() == 'u':
+    upload_name = input("enter the name of the file you want: ")
+    with open(upload_name, 'rb') as f:
+        data = f.read()
 
-with open(FILENAME, 'rb') as f:
-    data = f.read()
-
-# # receive the torrent file from the server first
-# # TORRENT_SENDER_ADDRESS = "192.168.4.83"
-# TORRENT_SENDER_ADDRESS = "127.0.0.1"
-# my_socket = socket.socket()
-# file_socket = socket.socket()
-# UPLOADING NEW FILE TO THE SYSTEM
-try:
-    msg = ClientProtocol.build_add_file_to_system(FILENAME, data)
-    file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
-    file_socket.send(msg)
-    answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
-except Exception as e:
-    sys.exit('[ERROR] in connecting to server')
-
-code = answer[:2]
-info = answer[2:]
-if code == '05':
-    file_name, status = ClientProtocol.break_added_status(info)
-    if status == '1':
-        print("FILE ADDED SUCCESSFULLY!")
+    try:
+        msg = ClientProtocol.build_add_file_to_system(upload_name, data)
+        file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
+        file_socket.send(msg)
+        answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
+    except Exception as e:
+        sys.exit('[ERROR] in connecting to server')
     else:
-        print("FILE WAS NOT ADDED")
+        code = answer[:2]
+        info = answer[2:]
+        if code == '05':
+            file_name, status = ClientProtocol.break_added_status(info)
+            if status == '1':
+                print("FILE ADDED SUCCESSFULLY!")
+            else:
+                print("FILE WAS NOT ADDED")
 
-# DOWNLOADING A FILE FROM THE SYSTEM
-try:
-    # my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
-    # # receive port for the file's server
-    # file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
-    # print(f"RECEIVED {file_port} AS A PORT!")
-    # file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
-    msg = ClientProtocol.build_ask_torrent(name)
-    my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
-    msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
-    tdata = msg[2:]
-except Exception as e:
-    sys.exit('[ERROR] in connecting to server')
+elif action.lower() == 'd':
+    files_in_system = [file.replace('.json', '') for file in files_in_system]
+    print(f"The files available in the system: {', '.join(files_in_system)}")
+    download_name = input('Enter the name of the file you want to download: ')
 
-t = Torrent(tdata)
-# data from the torrent file
-tname = t.get_name().replace('.torrent', '')
-hash_list = t.get_parts_hash()
-chunks_num = len(hash_list)
-whole_hash = t.get_hash()
-ip_list = t.get_ip_list()
+    try:
+        msg = ClientProtocol.build_ask_torrent(download_name)
+        my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
+        msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+        tdata = msg[2:]
+    except Exception as e:
+        sys.exit('[ERROR] in connecting to server')
+    else:
+        t = Torrent(tdata)
+        # data from the torrent file
+        tname = t.get_name().replace('.torrent', '')
+        hash_list = t.get_parts_hash()
+        chunks_num = len(hash_list)
+        whole_hash = t.get_hash()
+        ip_list = t.get_ip_list()
 
-# list of the chunks still needed
-chunks_to_write = [i for i in range(1, chunks_num+1)]
-# list of the chunks being taken care of
-chunks_busy = []
-# # event object
-# file_event = threading.Event()
-# file_event.set()
-#
-# msg_q = queue.Queue()
-#
-# threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+        # list of the chunks still needed
+        chunks_to_write = [i for i in range(1, chunks_num + 1)]
+        # list of the chunks being taken care of
+        chunks_busy = []
+        # list of the threads building the file
+        thread_list = []
 
-# list of the threads building the file
-thread_list = []
-# create the threads for getting the file's parts
-for i in range(len(ip_list)):
-    thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i+1, msg_q,)))
+        # create the threads for getting the file's parts
+        for i in range(len(ip_list)):
+            thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,)))
+        # start all the threads and wait for all of them to finish
+        for thread in thread_list:
+            thread.start()
+        # wait for all the threads to finish
+        for thread in thread_list:
+            thread.join()
 
-for thread in thread_list:
-    thread.start()
-# wait for all the threads to finish
-for thread in thread_list:
-    thread.join()
-
-print("all finished!")
-
-# check the whole hash
-with open(f'{tname}', 'rb') as file:
-    # whole_data = file.read().rstrip() # WORKS FOR PUG.JPG
-    whole_data = file.read()  # WORKS FOR CAT.JPG
-    print(1111, len(whole_data))
-
-# whole_data = whole_data.rstrip()
-
-# print(whole_data.count(' '.encode(), 29543-153))
-
-print(2222, len(whole_data))
-
-if encrypt(whole_data) == whole_hash:
-    print('THE FILE IS OK!')
-else:
-    print('THE FILE IS NOT OK!')
+        # check the whole hash
+        with open(f'{tname}', 'rb') as file:
+            whole_data = file.read().rstrip()  # WORKS FOR PUG.JPG
+        if encrypt(whole_data) == whole_hash:
+            print('THE FILE IS OK!')
+        else:
+            print('THE FILE IS NOT OK!')
