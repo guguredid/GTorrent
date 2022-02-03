@@ -94,7 +94,8 @@ def handle_share(ip, id, q):
 
 
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
-TORRENT_SENDER_ADDRESS = "127.0.0.1"
+TORRENT_SENDER_ADDRESS = "192.168.4.85"
+# TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
 
@@ -116,9 +117,9 @@ try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
     # receive port for the file's server
     file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
-    print(f"RECEIVED {file_port} AS A PORT!")
+    # print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
-    #TODO: RECEIVE LIST OF FILES IN THE SYSTEM
+    # receive list of files in the system
     files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
     files_in_system = ClientProtocol.break_files_in_system(files_in_system)
 except Exception as e:
@@ -131,6 +132,7 @@ if action.lower() == 'u':
 
     try:
         msg = ClientProtocol.build_add_file_to_system(upload_name, data)
+        print(f"SENDING {msg} ====== {len(msg)}")
         file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
         file_socket.send(msg)
         answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()

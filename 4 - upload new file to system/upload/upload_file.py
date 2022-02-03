@@ -85,7 +85,7 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
-FILENAME = 'pug.jpg'
+FILENAME = 'eleph.jpg'
 
 with open(FILENAME, 'rb') as f:
     data = f.read()
@@ -96,31 +96,32 @@ print(len(data))
 #
 # # receive the torrent file from the server first
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
-TORRENT_SENDER_ADDRESS = "127.0.0.1"
+TORRENT_SENDER_ADDRESS = "192.168.4.85"
+# TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
+# connect the sockets to the server (1 for messages, 1 for sending files
 try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
     # receive port for the file's server
-    file_port = int(my_socket.recv(4).decode())
+    file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
     print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
-    msg = ClientProtocol.build_add_file_to_system(FILENAME, data)
-    file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
-    file_socket.send(msg)
-    answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
+    #TODO: RECEIVE LIST OF FILES IN THE SYSTEM
+    files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+    files_in_system = ClientProtocol.break_files_in_system(files_in_system)
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 
 print("SENT!")
-code = answer[:2]
-info = answer[2:]
-if code == '05':
-    file_name, status = ClientProtocol.break_added_status(info)
-    if status == '1':
-        print("FILE ADDED SUCCESSFULLY!")
-    else:
-        print("FILE WAS NOT ADDED")
+# code = answer[:2]
+# info = answer[2:]
+# if code == '05':
+#     file_name, status = ClientProtocol.break_added_status(info)
+#     if status == '1':
+#         print("FILE ADDED SUCCESSFULLY!")
+#     else:
+#         print("FILE WAS NOT ADDED")
 #
 # t = Torrent(tdata)
 # # data from the torrent file
