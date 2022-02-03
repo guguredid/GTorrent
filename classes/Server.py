@@ -30,7 +30,6 @@ class Server:
         # if this is the main server, create a list of used ports for files servers
         if self.type == 'main':
             self._used_ports = {'test': 1000}   # socket: port
-            # self.my_db = DB("Gtorrent")
 
         threading.Thread(target=self._main_loop).start()
 

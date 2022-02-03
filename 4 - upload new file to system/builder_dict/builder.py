@@ -2,6 +2,7 @@ from classes.FileHandler import FileHandler
 from classes.Torrent import Torrent
 from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
+from classes.Server import Server
 import socket
 import threading
 import sys
@@ -30,7 +31,14 @@ def handle_msg_q(q):
         ip, curr_msg = q.get()
 
         code = curr_msg[:2].decode()
+        info = curr_msg[2:]
 
+        # asked to send file part
+        if code == '10':
+            file_name, part = ClientProtocol.break_ask_part(info)
+            server.send_part(ip, FileHandler.get_part(file_name, part))
+
+        # receive file part
         if code == '11':
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
@@ -97,6 +105,9 @@ file_event.set()
 msg_q = queue.Queue()
 
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+
+# server for sending files parts for clients
+server = Server(2000, msg_q, 'files_server')
 
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
 

@@ -5,7 +5,7 @@ import queue
 
 
 msg_q = queue.Queue()
-server = Server(2000, msg_q)
+server = Server(2000, msg_q, 'files_server')
 
 while True:
     # receive the message from the server
