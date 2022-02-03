@@ -33,15 +33,15 @@ def handle_msg_q(q):
     while True:
         ip, curr_msg = q.get()
 
-        code = data[:2]
-        info = data[2:]
+        code = curr_msg[:2]
+        info = curr_msg[2:]
 
         # someone asked for file part
         if code == '10'.encode():
             file_name, part = ClientProtocol.break_ask_part(info)
             file_name = file_name.rstrip()
             print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
-            server.send_part(ip, ClientProtocol.build_send_part(f'{FILES_ROOT}\{file_name}', part, FileHandler.get_part(file_name, part)))
+            server.send_part(ip, ClientProtocol.build_send_part(f'{FILES_ROOT}\{file_name}', part, FileHandler.get_part(f'{FILES_ROOT}\{file_name}', part)))
 
         # received a file part from someone
         elif code == '11':
