@@ -34,9 +34,9 @@ def handle_msg_q(q):
         info = curr_msg[2:]
 
         # asked to send file part
-        if code == '10':
-            file_name, part = ClientProtocol.break_ask_part(info)
-            server.send_part(ip, FileHandler.get_part(file_name, part))
+        # if code == '10':
+        #     file_name, part = ClientProtocol.break_ask_part(info)
+        #     server.send_part(ip, FileHandler.get_part(file_name, part))
 
         # receive file part
         if code == '11':
@@ -107,7 +107,7 @@ msg_q = queue.Queue()
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
 
 # server for sending files parts for clients
-server = Server(2000, msg_q, 'files_server')
+# server = Server(2000, msg_q, 'files_server')
 
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
 

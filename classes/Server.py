@@ -84,7 +84,6 @@ class Server:
                             else:
                                 self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
-                    print(444444, len(self._users.keys()))
                     # receive data from existing client
                     try:
                         length = current_socket.recv(6).decode()
