@@ -63,6 +63,7 @@ class ServerProtocol:
         '''
         file_name = data[:10].decode().rstrip()
         data = data[10:]
+        print(111111, len(data))
         return file_name, data
         # pass
 

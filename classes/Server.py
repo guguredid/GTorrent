@@ -72,6 +72,7 @@ class Server:
                             if length == "":
                                 self._disconnect(client)
                             else:
+                                print(f"MESSAGE LENGTH: {length}")
                                 data = client.recv(int(length))
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
@@ -82,6 +83,7 @@ class Server:
                                 self._disconnect(client)
                             # push the data we received to the queue
                             else:
+                                print(f"LENNNNNNN {len(data)}")
                                 self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
                     # receive data from existing client
@@ -92,6 +94,7 @@ class Server:
                             # print("USER DISCONNECTED!!!! 222222222222222222")
                             self._disconnect(current_socket)
                         else:
+                            print(f"MESSAGE LENGTH222222: {length}")
                             data = current_socket.recv(int(length))
                             # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
@@ -101,6 +104,7 @@ class Server:
                         # print(3333333, len(self._users.keys()))
                         # if the client did not disconnect, push the msg to the queue
                         if client in self._users.keys():
+                            print(f"LENNNNNNN222222 {len(data)}")
                             self.msg_q.put((self._get_ip_by_socket(client), data))
 
     def _get_ip_by_socket(self, soc):
@@ -183,6 +187,13 @@ class Server:
         :param client_socket: Socket
         :return: None
         '''
+        # if client_socket in self._users.keys():
+        #     print(f"{self._users[client_socket]} - disconnected")
+        #     del self._users[client_socket]
+        #     if self.type == 'main':
+        #         del self._used_ports[client_socket]
+        #     client_socket.close()
+
         print(f"{self._users[client_socket]} - disconnected")
         del self._users[client_socket]
         if self.type == 'main':
