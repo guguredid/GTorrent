@@ -10,6 +10,7 @@ import hashlib
 import queue
 import win32file
 import win32con
+import os
 
 
 def encrypt(data):
@@ -145,12 +146,16 @@ def monitor_dir():
         print(new_log, end='')
 
 
-# TORRENT_SENDER_ADDRESS = "192.168.4.83"
-TORRENT_SENDER_ADDRESS = "127.0.0.1"
+TORRENT_SENDER_ADDRESS = "192.168.4.83"
+# TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
 
 FILES_ROOT = 'C:\GTorrent'
+
+# if the files directory doesn't exist, create it
+if not os.path.exists(FILES_ROOT):
+    os.mkdir(FILES_ROOT)
 
 # event object
 file_event = threading.Event()
