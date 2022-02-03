@@ -41,20 +41,17 @@ class Client:
             print(f"[ERROR] in main loop1 - {str(e)}")
         else:
             self.running = True
-            # print('--------22', self.running)
             while self.running:
-                # print(f"IN CLIENT - {self.msg_to_send}")
-                    #TODO: THE SOCKET IS FOR RECEIVE AND SEND AT THE SAME TIME - A PROBLEM???
-                    try:
-                        length = self.my_socket.recv(6).decode()
-                    except Exception as e:
+                try:
+                    length = self.my_socket.recv(6).decode()
+                except Exception as e:
+                    self.disconnect()
+                else:
+                    if length == '':
                         self.disconnect()
                     else:
-                        if length == '':
-                            self.disconnect()
-                        else:
-                            msg = self.my_socket.recv(int(length))
-                            self.msg_q.put((self.server_ip, msg))
+                        msg = self.my_socket.recv(int(length))
+                        self.msg_q.put((self.server_ip, msg))
 
     def send_msg(self, msg):
         '''
@@ -67,7 +64,6 @@ class Client:
     def _send_msg(self):
         '''
         sends messages from the queue to the server
-        :param msg: str
         :return: None
         '''
 

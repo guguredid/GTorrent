@@ -36,15 +36,21 @@ def handle_msg_q(q):
         code = curr_msg[:2]
         info = curr_msg[2:]
 
+        # asking someone for a file
+        if code == '09'.encode():
+
+            pass
+
         # someone asked for file part
         if code == '10'.encode():
             file_name, part = ClientProtocol.break_ask_part(info)
             file_name = file_name.rstrip()
-            print(f"THE WANTED FILE - {file_name}, ASKED FOR CHUNK {part}")
+            print(f"THE WANTED FILE - {FILES_ROOT}\{file_name}, ASKED FOR CHUNK {part}")
             server.send_part(ip, ClientProtocol.build_send_part(f'{FILES_ROOT}\{file_name}', part, FileHandler.get_part(f'{FILES_ROOT}\{file_name}', part)))
 
         # received a file part from someone
         elif code == '11':
+            print("RECEIVED PART!!!")
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
                 # wait until can update the file
