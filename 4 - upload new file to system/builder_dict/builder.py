@@ -35,7 +35,6 @@ def handle_msg_q(q):
 
         # asked to send file part
         if code == '10':
-            print("HERE")
             file_name, part = ClientProtocol.break_ask_part(info)
             server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
 
@@ -48,7 +47,7 @@ def handle_msg_q(q):
                 # lock the thread to prevent other threads from using it
                 file_event.clear()
                 # insert the chunk to the file
-                FileHandler.insert_part(tname, chunk, current_chunk)
+                FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
                 # unlock the event for next thread
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
@@ -78,7 +77,6 @@ def handle_share(ip, id, q):
                 current_chunk = chunks_busy[0]
             # connect to the client - SHOULD BE HERE OR IN THE MAIN LOOP???
             try:
-                #TODO: SET TIMEOUT WITH soc.settimeout(...)???
                 msg = ClientProtocol.build_ask_part(tname, current_chunk)
                 client.send_msg(msg)
             except TimeoutError as e:
@@ -101,6 +99,8 @@ TORRENT_SENDER_ADDRESS = "192.168.4.74"
 # TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
+
+FILES_ROOT = 'C:\GTorrent\\'
 
 # event object
 file_event = threading.Event()
@@ -135,7 +135,7 @@ if action.lower() == 'u':
 
     try:
         msg = ClientProtocol.build_add_file_to_system(upload_name, data)
-        print(f"SENDING {msg} ====== {len(msg)}")
+        # print(f"SENDING {msg} ====== {len(msg)}")
         file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
         file_socket.send(msg)
         answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
@@ -190,7 +190,7 @@ elif action.lower() == 'd':
             thread.join()
 
         # check the whole hash
-        with open(f'{tname}', 'rb') as file:
+        with open(f'{FILES_ROOT}{tname}', 'rb') as file:
             whole_data = file.read().rstrip()  # WORKS FOR PUG.JPG
         if encrypt(whole_data) == whole_hash:
             print('THE FILE IS OK!')
