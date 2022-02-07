@@ -8,6 +8,7 @@ import threading
 import sys
 import hashlib
 import queue
+import os
 
 
 def encrypt(data):
@@ -36,7 +37,7 @@ def handle_msg_q(q):
         # asked to send file part
         if code == '10':
             file_name, part = ClientProtocol.break_ask_part(info)
-            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
+            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
         if code == '11':
@@ -101,6 +102,9 @@ my_socket = socket.socket()
 file_socket = socket.socket()
 
 FILES_ROOT = 'C:\GTorrent\\'
+# create the files' folder if does not exist
+if not os.path.isdir(FILES_ROOT):
+    os.mkdir(FILES_ROOT)
 
 # event object
 file_event = threading.Event()
