@@ -94,8 +94,9 @@ def handle_share(ip, id, q):
 
 
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
-TORRENT_SENDER_ADDRESS = "192.168.4.85"
-# TORRENT_SENDER_ADDRESS = "127.0.0.1"
+# TORRENT_SENDER_ADDRESS = "192.168.4.93"
+# TORRENT_SENDER_ADDRESS = "192.168.4.85"
+TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
 file_socket = socket.socket()
 

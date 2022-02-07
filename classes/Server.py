@@ -72,8 +72,10 @@ class Server:
                             if length == "":
                                 self._disconnect(client)
                             else:
-                                print(f"MESSAGE LENGTH: {length}")
-                                data = client.recv(int(length))
+                                print(f"{self.port}------MESSAGE LENGTH: {length}")
+                                # data = client.recv(int(length))
+                                data = self.recv_data(client, int(length))
+                                print("after!")
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
                             self._disconnect(client)
@@ -106,6 +108,25 @@ class Server:
                         if client in self._users.keys():
                             print(f"LENNNNNNN222222 {len(data)}")
                             self.msg_q.put((self._get_ip_by_socket(client), data))
+
+    def recv_data(self, soc, length):
+        '''
+        returns the data from the socket, gets in chunks of 1024
+        :param soc: Socket
+        :param len: int
+        :return: bytes
+        '''
+        print("in func", length)
+        data = bytearray()
+        while len(data) < length:
+            slice = length - len(data)
+            if slice > 1024:
+                data.extend(soc.recv(1024))
+            else:
+                data.extend(soc.recv(slice))
+                break
+        print(0000000, length, len(data))
+        return bytes(data)
 
     def _get_ip_by_socket(self, soc):
         '''
