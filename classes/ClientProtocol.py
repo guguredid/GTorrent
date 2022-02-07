@@ -25,7 +25,8 @@ class ClientProtocol:
         :param files: list
         :return: str
         '''
-        pass
+        return f"01{';'.join(files)}"
+        # pass
 
     @staticmethod
     def break_delete_file(data):

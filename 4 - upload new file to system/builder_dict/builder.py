@@ -132,9 +132,11 @@ def monitor_dir():
         # 1 : created file
         if results[0][0] == 1:
             new_log = f' - Created file - {results[0][1]}\n'
+            msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
             new_log = f' - Deleted file - {results[0][1]}\n'
+            msg = ClientProtocol.build_send_deleted_file(results[0][1])
         # # 3 : updated file
         # elif results[0][0] == 3:
         #     new_log = f' - Updated file - {results[0][1]}\n'
@@ -144,7 +146,8 @@ def monitor_dir():
 
         # print the LOG
         if new_log != '':
-            print(new_log, end='')
+            print(new_log)
+            print(msg)
 
 
 
@@ -181,11 +184,15 @@ try:
     my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
     # receive port for the file's server
     file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
-    # print(f"RECEIVED {file_port} AS A PORT!")
     file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
     # receive list of files in the system
     files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
     files_in_system = ClientProtocol.break_files_in_system(files_in_system)
+    #TODO: SEND FILES IN THE FOLDER
+    my_files = os.listdir(FILES_ROOT)
+    msg = ClientProtocol.build_send_file_names(my_files)
+    my_socket.send(str(len(msg)).zfill(6).encode())
+    my_socket.send(msg.encode())
 except Exception as e:
     sys.exit('[ERROR] in connecting to server')
 
@@ -228,32 +235,38 @@ elif action.lower() == 'd':
         t = Torrent(tdata)
         # data from the torrent file
         tname = t.get_name().replace('.torrent', '')
-        hash_list = t.get_parts_hash()
-        chunks_num = len(hash_list)
-        whole_hash = t.get_hash()
-        ip_list = t.get_ip_list()
+        if tname != '':
 
-        # list of the chunks still needed
-        chunks_to_write = [i for i in range(1, chunks_num + 1)]
-        # list of the chunks being taken care of
-        chunks_busy = []
-        # list of the threads building the file
-        thread_list = []
+            hash_list = t.get_parts_hash()
+            chunks_num = len(hash_list)
+            whole_hash = t.get_hash()
+            ip_list = t.get_ip_list()
 
-        # create the threads for getting the file's parts
-        for i in range(len(ip_list)):
-            thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,)))
-        # start all the threads and wait for all of them to finish
-        for thread in thread_list:
-            thread.start()
-        # wait for all the threads to finish
-        for thread in thread_list:
-            thread.join()
+            # list of the chunks still needed
+            chunks_to_write = [i for i in range(1, chunks_num + 1)]
+            # list of the chunks being taken care of
+            chunks_busy = []
+            # list of the threads building the file
+            thread_list = []
 
-        # check the whole hash
-        with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-            whole_data = file.read().rstrip()  # WORKS FOR PUG.JPG
-        if encrypt(whole_data) == whole_hash:
-            print('THE FILE IS OK!')
+            # create the threads for getting the file's parts
+            for i in range(len(ip_list)):
+                thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,)))
+            # start all the threads and wait for all of them to finish
+            for thread in thread_list:
+                thread.start()
+            # wait for all the threads to finish
+            for thread in thread_list:
+                thread.join()
+
+            # check the whole hash
+            with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                whole_data = file.read().rstrip()  # WORKS FOR PUG.JPG
+            if encrypt(whole_data) == whole_hash:
+                print('THE FILE IS OK!')
+            else:
+                print('THE FILE IS NOT OK!')
         else:
-            print('THE FILE IS NOT OK!')
+            print('There is no such file in the server!')
+
+

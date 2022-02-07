@@ -1,6 +1,7 @@
 '''
 file for a class representing protocol handler for server
 '''
+import os
 
 
 class ServerProtocol:
@@ -25,7 +26,8 @@ class ServerProtocol:
         :param data: str
         :return: list
         '''
-        pass
+        return data.split(';')
+        # pass
 
     @staticmethod
     def build_delete_file(file_name):
@@ -113,8 +115,11 @@ class ServerProtocol:
         :param tname: str
         :return: str
         '''
-        with open(f"{tname}.json", 'r') as file:
-            data = file.read()
+        data = ''
+        # check if the torrent file exists
+        if os.path.exists(tname):
+            with open(f"{tname}.json", 'r') as file:
+                data = file.read()
         return f"07{data}"
         # pass
 
