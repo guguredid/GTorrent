@@ -143,7 +143,8 @@ def monitor_dir():
         #     new_log = f' - Renamed file - from {results[0][1]} to {results[1][1]}\n'
 
         # print the LOG
-        print(new_log, end='')
+        if new_log != '':
+            print(new_log, end='')
 
 
 
