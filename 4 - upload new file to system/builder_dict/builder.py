@@ -9,6 +9,8 @@ import sys
 import hashlib
 import queue
 import os
+import win32file
+import win32con
 
 
 def encrypt(data):
@@ -93,6 +95,59 @@ def handle_share(ip, id, q):
     print(f"THREAD {id} FINISHED!")
 
 
+def monitor_dir():
+    '''
+    monitors changes in the files directory, and reports them
+    :return: None
+    '''
+    hDir = win32file.CreateFile(
+        FILES_ROOT,
+        win32con.FILE_SHARE_READ,
+        win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE,
+        None,
+        win32con.OPEN_EXISTING,
+        win32con.FILE_FLAG_BACKUP_SEMANTICS,
+        None
+    )
+
+    # monitor the directory
+    while True:
+
+        new_log = ''
+
+        results = win32file.ReadDirectoryChangesW(
+            hDir,
+            1024,
+            True,
+            win32con.FILE_NOTIFY_CHANGE_FILE_NAME |
+            win32con.FILE_NOTIFY_CHANGE_DIR_NAME |
+            win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
+            win32con.FILE_NOTIFY_CHANGE_SIZE |
+            win32con.FILE_NOTIFY_CHANGE_LAST_WRITE |
+            win32con.FILE_NOTIFY_CHANGE_SECURITY,
+            None,
+            None
+        )
+
+        # 1 : created file
+        if results[0][0] == 1:
+            new_log = f' - Created file - {results[0][1]}\n'
+        # 2 : deleted file
+        elif results[0][0] == 2:
+            new_log = f' - Deleted file - {results[0][1]}\n'
+        # # 3 : updated file
+        # elif results[0][0] == 3:
+        #     new_log = f' - Updated file - {results[0][1]}\n'
+        # # 4 : renamed
+        # elif results[0][0] == 4:
+        #     new_log = f' - Renamed file - from {results[0][1]} to {results[1][1]}\n'
+
+        # print the LOG
+        print(new_log, end='')
+
+
+
+
 TORRENT_SENDER_ADDRESS = "192.168.4.74"
 # TORRENT_SENDER_ADDRESS = "192.168.4.83"
 # TORRENT_SENDER_ADDRESS = "192.168.4.93"
@@ -113,6 +168,7 @@ file_event.set()
 msg_q = queue.Queue()
 
 threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+threading.Thread(target=monitor_dir, daemon=True).start()
 
 # server for sending files parts for clients
 server = Server(2000, msg_q, 'files_server')
