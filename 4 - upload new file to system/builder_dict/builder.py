@@ -35,8 +35,9 @@ def handle_msg_q(q):
 
         # asked to send file part
         if code == '10':
+            print("HERE")
             file_name, part = ClientProtocol.break_ask_part(info)
-            server.send_part(ip, FileHandler.get_part(file_name, part))
+            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(file_name, part)))
 
         # receive file part
         if code == '11':
