@@ -70,7 +70,7 @@ def handle_msg_q(q):
         # receive torrent file
         elif code == '07':
             # tdata = ClientProtocol.break_recv_torrent(info)
-            tdata = info
+            tdata = info.decode()
 
         # asked to send file part
         elif code == '10':
@@ -246,6 +246,7 @@ elif action.lower() == 'd':
             print('waiting for torrent...')
 
         if tdata != '':
+            print(f"RECEIVED TORRENT: {tdata}")
             t = Torrent(tdata)
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')

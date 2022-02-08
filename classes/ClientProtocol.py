@@ -27,11 +27,9 @@ class ClientProtocol:
         :param files: list
         :return: str
         '''
-        print("IN FUNC!!!-- ", ';'.join(files))
         files_part = ''
         if len(files) > 0:
             files_part = ';'.join(files)
-        print(f"SENDING 01{files_part}")
         return f"01{files_part}"
         # pass
 

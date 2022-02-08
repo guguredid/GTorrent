@@ -107,15 +107,15 @@ while True:
     elif code == '07'.encode():
 
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
-        print(f"SENDING TORRENT FOR {tname}")
+        # print(f"SENDING TORRENT FOR {tname}")
         msg = ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}")
-        print(f"MESSAGE!!! {msg}")
+        # print(f"MESSAGE!!! {msg}")
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}"))
 
     # create file upload server
     elif code == '20'.encode():
         port = int(info.decode())
-        print(f"SENDING {ip} PORT {port}")
+        # print(f"SENDING {ip} PORT {port}")
         server_by_ip[ip] = Server(port, files_q, 'file_server')
         # server.send_msg(ip, str(port))
         server.send_msg(ip, ServerProtocol.build_send_port(port))
