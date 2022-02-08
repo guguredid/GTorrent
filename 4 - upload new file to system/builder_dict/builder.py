@@ -11,6 +11,7 @@ import queue
 import os
 import win32file
 import win32con
+import shutil
 
 
 def encrypt(data):
@@ -35,6 +36,8 @@ def handle_msg_q(q):
 
         code = curr_msg[:2].decode()
         info = curr_msg[2:]
+
+        # delete a file from the monitored folder
 
         # asked to send file part
         if code == '10':
@@ -137,16 +140,10 @@ def monitor_dir():
         elif results[0][0] == 2:
             new_log = f' - Deleted file - {results[0][1]}\n'
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
-        # # 3 : updated file
-        # elif results[0][0] == 3:
-        #     new_log = f' - Updated file - {results[0][1]}\n'
-        # # 4 : renamed
-        # elif results[0][0] == 4:
-        #     new_log = f' - Renamed file - from {results[0][1]} to {results[1][1]}\n'
 
         # print the LOG
         if new_log != '':
-            print(new_log)
+            print(new_log, end='')
             print(msg)
 
 
@@ -198,6 +195,8 @@ except Exception as e:
 
 if action.lower() == 'u':
     upload_name = input("enter the name of the file you want: ")
+    only_name = upload_name.split('\\')[-1]
+    # print(f"THE FILE NAME ONLY IS {upload_name.split('\\')[-1]}")
     with open(upload_name, 'rb') as f:
         data = f.read()
 
@@ -214,8 +213,11 @@ if action.lower() == 'u':
         info = answer[2:]
         if code == '05':
             file_name, status = ClientProtocol.break_added_status(info)
+            # if the file is added to the system, write it to the monitored folder
             if status == '1':
                 print("FILE ADDED SUCCESSFULLY!")
+                shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
+
             else:
                 print("FILE WAS NOT ADDED")
 
