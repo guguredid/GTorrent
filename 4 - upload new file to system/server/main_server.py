@@ -95,6 +95,7 @@ while True:
         for f in client_files:
             if f"{f}.json" not in files_in_system:
                 print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
+                server.send_msg(ip, ServerProtocol.build_delete_file(f))
         pass
 
     # send torrent file

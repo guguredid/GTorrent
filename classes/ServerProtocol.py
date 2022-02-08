@@ -36,7 +36,8 @@ class ServerProtocol:
         :param file_name: str
         :return: str
         '''
-        pass
+        return f"02{file_name.ljust(10)}"
+        # pass
 
     @staticmethod
     def break_recv_deleted_file(data):

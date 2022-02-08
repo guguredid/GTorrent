@@ -38,6 +38,10 @@ def handle_msg_q(q):
         info = curr_msg[2:]
 
         # delete a file from the monitored folder
+        if code == '02':
+            print(f"DELETING {info} FROM THE MONITORED FOLDER!")
+            if os.path.exists(f"{FILES_ROOT}{info}"):
+                os.remove(f"{FILES_ROOT}{info}")
 
         # asked to send file part
         if code == '10':
@@ -201,8 +205,7 @@ if action.lower() == 'u':
         data = f.read()
 
     try:
-        msg = ClientProtocol.build_add_file_to_system(upload_name, data)
-        # print(f"SENDING {msg} ====== {len(msg)}")
+        msg = ClientProtocol.build_add_file_to_system(only_name, data)
         file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
         file_socket.send(msg)
         answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
@@ -217,58 +220,58 @@ if action.lower() == 'u':
             if status == '1':
                 print("FILE ADDED SUCCESSFULLY!")
                 shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
-
             else:
                 print("FILE WAS NOT ADDED")
 
 elif action.lower() == 'd':
     files_in_system = [file.replace('.json', '') for file in files_in_system]
-    print(f"The files available in the system: {', '.join(files_in_system)}")
-    download_name = input('Enter the name of the file you want to download: ')
-
-    try:
-        msg = ClientProtocol.build_ask_torrent(download_name)
-        my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
-        msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
-        tdata = msg[2:]
-    except Exception as e:
-        sys.exit('[ERROR] in connecting to server')
+    if len(files_in_system) == 0:
+        print("Sorry, it appears there are no available files to download from the system...")
     else:
-        if tdata != '':
-            t = Torrent(tdata)
-            # data from the torrent file
-            tname = t.get_name().replace('.torrent', '')
+        print(f"The files available in the system: {', '.join(files_in_system)}")
+        download_name = input('Enter the name of the file you want to download: ')
 
-            hash_list = t.get_parts_hash()
-            chunks_num = len(hash_list)
-            whole_hash = t.get_hash()
-            ip_list = t.get_ip_list()
-
-            # list of the chunks still needed
-            chunks_to_write = [i for i in range(1, chunks_num + 1)]
-            # list of the chunks being taken care of
-            chunks_busy = []
-            # list of the threads building the file
-            thread_list = []
-
-            # create the threads for getting the file's parts
-            for i in range(len(ip_list)):
-                thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,)))
-            # start all the threads and wait for all of them to finish
-            for thread in thread_list:
-                thread.start()
-            # wait for all the threads to finish
-            for thread in thread_list:
-                thread.join()
-
-            # check the whole hash
-            with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                whole_data = file.read().rstrip()
-            if encrypt(whole_data) == whole_hash:
-                print('THE FILE IS OK!')
-            else:
-                print('THE FILE IS NOT OK!')
+        try:
+            msg = ClientProtocol.build_ask_torrent(download_name)
+            my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
+            msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
+            tdata = msg[2:]
+        except Exception as e:
+            sys.exit('[ERROR] in connecting to server')
         else:
-            print('There is no such file in the server!')
+            if tdata != '':
+                t = Torrent(tdata)
+                # data from the torrent file
+                tname = t.get_name().replace('.torrent', '')
 
+                hash_list = t.get_parts_hash()
+                chunks_num = len(hash_list)
+                whole_hash = t.get_hash()
+                ip_list = t.get_ip_list()
 
+                # list of the chunks still needed
+                chunks_to_write = [i for i in range(1, chunks_num + 1)]
+                # list of the chunks being taken care of
+                chunks_busy = []
+                # list of the threads building the file
+                thread_list = []
+
+                # create the threads for getting the file's parts
+                for i in range(len(ip_list)):
+                    thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
+                # start all the threads and wait for all of them to finish
+                for thread in thread_list:
+                    thread.start()
+                # wait for all the threads to finish
+                for thread in thread_list:
+                    thread.join()
+
+                # check the whole hash
+                with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                    whole_data = file.read().rstrip()
+                if encrypt(whole_data) == whole_hash:
+                    print('THE FILE IS OK!')
+                else:
+                    print('THE FILE IS NOT OK!')
+            else:
+                print('There is no such file in the server!')
