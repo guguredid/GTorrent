@@ -30,6 +30,7 @@ class Server:
         # if this is the main server, create a list of used ports for files servers
         if self.type == 'main':
             self._used_ports = {'test': 1000}   # socket: port
+            self.db = DB("GTorrent")
 
         threading.Thread(target=self._main_loop).start()
 
@@ -62,10 +63,12 @@ class Server:
                         msg = ServerProtocol.build_send_port(port)
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                         # send the client a list of the files in the server
-                        self.msg_q.put((self._get_ip_by_socket(client), '01'.encode()))
+                        self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
                         #TODO: FIX GETTING THE FILES FROM THE CLIENT!
-                        client_files = client.recv(int(client.recv(6).decode())).decode()
-                        print(f"FILES THE CLIENT HAS: {client_files[2:]}")
+                        client_files = client.recv(int(client.recv(6).decode())).decode()[2:]
+                        print(f"FILES THE CLIENT HAS: {client_files}")
+                        self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
+
                     else:
                         # receive data from existing client
                         data = ''

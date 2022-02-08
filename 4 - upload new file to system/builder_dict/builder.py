@@ -188,7 +188,7 @@ try:
     # receive list of files in the system
     files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
     files_in_system = ClientProtocol.break_files_in_system(files_in_system)
-    #TODO: SEND FILES IN THE FOLDER
+    # send the files in the monitored folder
     my_files = os.listdir(FILES_ROOT)
     msg = ClientProtocol.build_send_file_names(my_files)
     my_socket.send(str(len(msg)).zfill(6).encode())

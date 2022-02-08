@@ -80,12 +80,22 @@ while True:
     code = data[:2]
     info = data[2:]
 
-    print(f"RECEIVED FROM {ip} DATA {info}")
+    print(f"RECEIVED FROM {ip} INFO {info}, DATA {data}")
 
     # send files in the system
-    if code == '01'.encode():
+    if code == '99'.encode():
         files_in_system = db.get_torrents()
         server.send_msg(ip, ServerProtocol.build_send_file_names(files_in_system))
+
+    # receive files in the client's monitored folder
+    elif code == '01'.encode():
+        client_files = ServerProtocol.break_recv_file_names(info.decode())
+        files_in_system = db.get_torrents()
+        # check for files not in the system, if there are tell the client to delete them
+        for f in client_files:
+            if f"{f}.json" not in files_in_system:
+                print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
+        pass
 
     # send torrent file
     elif code == '07'.encode():
