@@ -116,12 +116,15 @@ class ServerProtocol:
         :return: str
         '''
         data = ''
+        print(f"IN FUNCTION: {tname}")
         # check if the torrent file exists
-        if os.path.exists(tname):
+        # if os.path.exists(tname):
+        if os.path.exists(f"{tname}.json"):
+            print('EXIST!!')
             with open(f"{tname}.json", 'r') as file:
                 data = file.read()
+        print(f"THE DATA IS {data}")
         return f"07{data}"
-        # pass
 
     @staticmethod
     def build_send_port(port):

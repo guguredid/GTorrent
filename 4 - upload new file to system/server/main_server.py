@@ -89,7 +89,11 @@ while True:
 
     # send torrent file
     elif code == '07'.encode():
+
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
+        print(f"SENDING TORRENT FOR {tname}")
+        msg = ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}")
+        print(f"MESSAGE!!! {msg}")
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}"))
 
     # create file upload server

@@ -232,10 +232,10 @@ elif action.lower() == 'd':
     except Exception as e:
         sys.exit('[ERROR] in connecting to server')
     else:
-        t = Torrent(tdata)
-        # data from the torrent file
-        tname = t.get_name().replace('.torrent', '')
-        if tname != '':
+        if tdata != '':
+            t = Torrent(tdata)
+            # data from the torrent file
+            tname = t.get_name().replace('.torrent', '')
 
             hash_list = t.get_parts_hash()
             chunks_num = len(hash_list)
@@ -261,7 +261,7 @@ elif action.lower() == 'd':
 
             # check the whole hash
             with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                whole_data = file.read().rstrip()  # WORKS FOR PUG.JPG
+                whole_data = file.read().rstrip()
             if encrypt(whole_data) == whole_hash:
                 print('THE FILE IS OK!')
             else:
