@@ -44,21 +44,21 @@ def handle_msg_q(q):
         # receive files from the server
         if code == '01':
             info = info.decode()
-            print(f"IN 01 !!!! INFO-{info}")
+            # print(f"IN 01 !!!! INFO-{info}")
             files_in_system = ClientProtocol.break_files_in_system(info)
             # print(f"FILES IN THE SYSTEM: {files_in_system}")
 
         # delete a file from the monitored folder
         elif code == '02':
             info = info.decode()
-            print(f"DELETING {info} FROM THE MONITORED FOLDER!")
+            # print(f"DELETING {info} FROM THE MONITORED FOLDER!")
             if os.path.exists(f"{FILES_ROOT}{info}"):
                 os.remove(f"{FILES_ROOT}{info}")
 
         # receive the uploaded file's status (managed to upload or not)
         elif code == '05':
             info = info.decode()
-            print(f"UPLOADING FILE, GOT {info}")
+            # print(f"UPLOADING FILE, GOT {info}")
             file_name, status = ClientProtocol.break_added_status(info)
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
@@ -97,7 +97,7 @@ def handle_msg_q(q):
         # receive port for file socket
         elif code == '20':
             port = int(info.decode())
-            print(f"RECIEVED PORT {port}")
+            # print(f"RECIEVED PORT {port}")
             # file_socket.connect((TORRENT_SENDER_ADDRESS, port))
             file_server_client = Client(port, TORRENT_SENDER_ADDRESS, msg_q)
 
@@ -246,7 +246,7 @@ elif action.lower() == 'd':
             print('waiting for torrent...')
 
         if tdata != '':
-            print(f"RECEIVED TORRENT: {tdata}")
+            # print(f"RECEIVED TORRENT: {tdata}")
             t = Torrent(tdata)
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')
