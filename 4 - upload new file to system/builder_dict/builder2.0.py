@@ -31,25 +31,47 @@ def handle_msg_q(q):
     :param q: Queue
     :return: None
     '''
+    global file_server_client
+
     while True:
         ip, curr_msg = q.get()
 
         code = curr_msg[:2].decode()
         info = curr_msg[2:]
 
+        # receive files from the server
+        if code == '01':
+            info = info.decode()
+            print(f"IN 01 !!!! INFO-{info}")
+            files_in_system = ClientProtocol.break_files_in_system(info)
+            print(f"FILES IN THE SYSTEM: {files_in_system}")
+
         # delete a file from the monitored folder
-        if code == '02':
+        elif code == '02':
+            info = info.decode()
             print(f"DELETING {info} FROM THE MONITORED FOLDER!")
             if os.path.exists(f"{FILES_ROOT}{info}"):
                 os.remove(f"{FILES_ROOT}{info}")
 
+        # receive the uploaded file's status (managed to upload or not)
+        elif code == '05':
+            info = info.decode()
+            print(f"UPLOADING FILE, GOT {info}")
+            file_name, status = ClientProtocol.break_added_status(info)
+            # if the file is added to the system, write it to the monitored folder
+            if status == '1':
+                print("FILE ADDED SUCCESSFULLY!")
+                shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
+            else:
+                print("FILE WAS NOT ADDED")
+
         # asked to send file part
-        if code == '10':
+        elif code == '10':
             file_name, part = ClientProtocol.break_ask_part(info)
             server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
-        if code == '11':
+        elif code == '11':
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
                 # wait until can update the file
@@ -64,6 +86,13 @@ def handle_msg_q(q):
                 file_event.set()
             else:
                 print('THE HASH IS NOT OKAY!')
+
+        # receive port for file socket
+        elif code == '20':
+            port = int(info.decode())
+            print(f"RECIEVED PORT {port}")
+            # file_socket.connect((TORRENT_SENDER_ADDRESS, port))
+            file_server_client = Client(port, TORRENT_SENDER_ADDRESS, msg_q)
 
 
 def handle_share(ip, id, q):
@@ -175,25 +204,15 @@ threading.Thread(target=monitor_dir, daemon=True).start()
 
 # server for sending files parts for clients
 server = Server(2000, msg_q, 'files_server')
+# connecting to the server, receiving port for the file socket, receive list of files in the system, send files from the monitored folder
+server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
+file_server_client = None
+
+my_files = os.listdir(FILES_ROOT)
+print(f"FILES IN GTORRENT: {my_files}")
+server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
-
-# connect the sockets to the server (1 for messages, 1 for sending files
-try:
-    my_socket.connect((TORRENT_SENDER_ADDRESS, 3000))
-    # receive port for the file's server
-    file_port = int(my_socket.recv(int(my_socket.recv(6).decode())).decode())
-    file_socket.connect((TORRENT_SENDER_ADDRESS, file_port))
-    # receive list of files in the system
-    files_in_system = my_socket.recv(int(my_socket.recv(6).decode())).decode()
-    files_in_system = ClientProtocol.break_files_in_system(files_in_system)
-    # send the files in the monitored folder
-    my_files = os.listdir(FILES_ROOT)
-    msg = ClientProtocol.build_send_file_names(my_files)
-    my_socket.send(str(len(msg)).zfill(6).encode())
-    my_socket.send(msg.encode())
-except Exception as e:
-    sys.exit('[ERROR] in connecting to server')
 
 if action.lower() == 'u':
     upload_name = input("enter the name of the file you want: ")
@@ -201,75 +220,5 @@ if action.lower() == 'u':
     # print(f"THE FILE NAME ONLY IS {upload_name.split('\\')[-1]}")
     with open(upload_name, 'rb') as f:
         data = f.read()
-
-    try:
-        msg = ClientProtocol.build_add_file_to_system(only_name, data)
-        file_socket.send(f"{str(len(msg)).zfill(6)}".encode())
-        file_socket.send(msg)
-        answer = file_socket.recv(int(file_socket.recv(6).decode())).decode()
-    except Exception as e:
-        sys.exit('[ERROR] in connecting to server')
-    else:
-        code = answer[:2]
-        info = answer[2:]
-        if code == '05':
-            file_name, status = ClientProtocol.break_added_status(info)
-            # if the file is added to the system, write it to the monitored folder
-            if status == '1':
-                print("FILE ADDED SUCCESSFULLY!")
-                shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
-            else:
-                print("FILE WAS NOT ADDED")
-
-elif action.lower() == 'd':
-    files_in_system = [file.replace('.json', '') for file in files_in_system]
-    if len(files_in_system) == 0:
-        print("Sorry, it appears there are no available files to download from the system...")
-    else:
-        print(f"The files available in the system: {', '.join(files_in_system)}")
-        download_name = input('Enter the name of the file you want to download: ')
-
-        try:
-            msg = ClientProtocol.build_ask_torrent(download_name)
-            my_socket.send(f"{str(len(msg)).zfill(6)}{msg}".encode())
-            msg = my_socket.recv(int(my_socket.recv(6).decode())).decode()
-            tdata = msg[2:]
-        except Exception as e:
-            sys.exit('[ERROR] in connecting to server')
-        else:
-            if tdata != '':
-                t = Torrent(tdata)
-                # data from the torrent file
-                tname = t.get_name().replace('.torrent', '')
-
-                hash_list = t.get_parts_hash()
-                chunks_num = len(hash_list)
-                whole_hash = t.get_hash()
-                ip_list = t.get_ip_list()
-
-                # list of the chunks still needed
-                chunks_to_write = [i for i in range(1, chunks_num + 1)]
-                # list of the chunks being taken care of
-                chunks_busy = []
-                # list of the threads building the file
-                thread_list = []
-
-                # create the threads for getting the file's parts
-                for i in range(len(ip_list)):
-                    thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
-                # start all the threads and wait for all of them to finish
-                for thread in thread_list:
-                    thread.start()
-                # wait for all the threads to finish
-                for thread in thread_list:
-                    thread.join()
-
-                # check the whole hash
-                with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                    whole_data = file.read().rstrip()
-                if encrypt(whole_data) == whole_hash:
-                    print('THE FILE IS OK!')
-                else:
-                    print('THE FILE IS NOT OK!')
-            else:
-                print('There is no such file in the server!')
+    if file_server_client is not None:
+        file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))

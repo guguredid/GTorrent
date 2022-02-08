@@ -50,7 +50,6 @@ class Client:
                     if length == '':
                         self.disconnect()
                     else:
-                        # msg = self.my_socket.recv(int(length))
                         msg = self.recv_data(int(length))
                         self.msg_q.put((self.server_ip, msg))
 
@@ -89,8 +88,12 @@ class Client:
                 msg = self._send_msg_q.get()
                 try:
                     self.my_socket.send(str(len(msg)).zfill(6).encode())
-                    self.my_socket.send(msg.encode())
+                    if type(msg) is bytes:
+                        self.my_socket.send(msg)
+                    else:
+                        self.my_socket.send(msg.encode())
                 except Exception as e:
+                    print(f'ERROR IN CLIENT! {str(e)}')
                     self.disconnect()
                     break
 

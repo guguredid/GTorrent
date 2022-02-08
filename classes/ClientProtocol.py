@@ -15,7 +15,11 @@ class ClientProtocol:
         :param data: str
         :return: list
         '''
-        return data[2:].split(';')
+        # return data[2:].split(';')
+        ret = ''
+        if len(data) > 0:
+            ret = data.split(';')
+        return ret
         # pass
 
     @staticmethod
@@ -25,7 +29,12 @@ class ClientProtocol:
         :param files: list
         :return: str
         '''
-        return f"01{';'.join(files)}"
+        print("IN FUNC!!!-- ", ';'.join(files))
+        files_part = ''
+        if len(files) > 0:
+            files_part = ';'.join(files)
+        print(f"SENDING 01{files_part}")
+        return f"01{files_part}"
         # pass
 
     @staticmethod
@@ -65,9 +74,7 @@ class ClientProtocol:
         :param data: bytes(???)
         :return: bytes
         '''
-        # return f"05{file_name.ljust(10)}{str(len(data)).zfill(6)}".encode() + data
         return f"05{file_name.ljust(10)}".encode() + data
-        # pass
 
     @staticmethod
     def break_added_status(data):
