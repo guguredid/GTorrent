@@ -71,8 +71,7 @@ class Client:
 
     def send_msg(self, msg):
         '''
-
-        :param msg:
+        :param msg: str\bytes
         :return:
         '''
         self._send_msg_q.put(msg)

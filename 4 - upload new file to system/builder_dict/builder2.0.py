@@ -32,6 +32,8 @@ def handle_msg_q(q):
     :return: None
     '''
     global file_server_client
+    global files_in_system
+    global tdata
 
     while True:
         ip, curr_msg = q.get()
@@ -44,7 +46,7 @@ def handle_msg_q(q):
             info = info.decode()
             print(f"IN 01 !!!! INFO-{info}")
             files_in_system = ClientProtocol.break_files_in_system(info)
-            print(f"FILES IN THE SYSTEM: {files_in_system}")
+            # print(f"FILES IN THE SYSTEM: {files_in_system}")
 
         # delete a file from the monitored folder
         elif code == '02':
@@ -64,6 +66,11 @@ def handle_msg_q(q):
                 shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
             else:
                 print("FILE WAS NOT ADDED")
+
+        # receive torrent file
+        elif code == '07':
+            # tdata = ClientProtocol.break_recv_torrent(info)
+            tdata = info
 
         # asked to send file part
         elif code == '10':
@@ -206,10 +213,13 @@ threading.Thread(target=monitor_dir, daemon=True).start()
 server = Server(2000, msg_q, 'files_server')
 # connecting to the server, receiving port for the file socket, receive list of files in the system, send files from the monitored folder
 server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
+
 file_server_client = None
 
+files_in_system = ''
+
 my_files = os.listdir(FILES_ROOT)
-print(f"FILES IN GTORRENT: {my_files}")
+# print(f"FILES IN GTORRENT: {my_files}")
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
@@ -222,3 +232,55 @@ if action.lower() == 'u':
         data = f.read()
     if file_server_client is not None:
         file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+
+elif action.lower() == 'd':
+    if len(files_in_system) > 0:
+        tdata = '~'
+        print(f"The files currently available are: {', '.join(files_in_system)}")
+        download_name = input('Enter the name of the file you want to download: ')
+        # msg = ClientProtocol.build_ask_torrent(download_name)
+        server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
+
+        # wait until receiving the torrent file
+        while tdata == '~':
+            print('waiting for torrent...')
+
+        if tdata != '':
+            t = Torrent(tdata)
+            # data from the torrent file
+            tname = t.get_name().replace('.torrent', '')
+
+            hash_list = t.get_parts_hash()
+            chunks_num = len(hash_list)
+            whole_hash = t.get_hash()
+            ip_list = t.get_ip_list()
+
+            # list of the chunks still needed
+            chunks_to_write = [i for i in range(1, chunks_num + 1)]
+            # list of the chunks being taken care of
+            chunks_busy = []
+            # list of the threads building the file
+            thread_list = []
+
+            # create the threads for getting the file's parts
+            for i in range(len(ip_list)):
+                thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
+            # start all the threads and wait for all of them to finish
+            for thread in thread_list:
+                thread.start()
+            # wait for all the threads to finish
+            for thread in thread_list:
+                thread.join()
+
+            # check the whole hash
+            with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                whole_data = file.read().rstrip()
+            if encrypt(whole_data) == whole_hash:
+                print('THE FILE IS OK!')
+            else:
+                print('THE FILE IS NOT OK!')
+        else:
+            print('There is no such file in the server!')
+    else:
+        print("There are no available files currently...")
+

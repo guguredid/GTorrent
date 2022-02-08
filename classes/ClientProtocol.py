@@ -15,12 +15,10 @@ class ClientProtocol:
         :param data: str
         :return: list
         '''
-        # return data[2:].split(';')
         ret = ''
         if len(data) > 0:
             ret = data.split(';')
         return ret
-        # pass
 
     @staticmethod
     def build_send_file_names(files):
