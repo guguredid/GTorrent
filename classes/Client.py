@@ -50,8 +50,25 @@ class Client:
                     if length == '':
                         self.disconnect()
                     else:
-                        msg = self.my_socket.recv(int(length))
+                        # msg = self.my_socket.recv(int(length))
+                        msg = self.recv_data(int(length))
                         self.msg_q.put((self.server_ip, msg))
+
+    def recv_data(self, length):
+        '''
+        returns the data from the socket, gets in chunks of 1024
+        :param length: int
+        :return: bytes
+        '''
+        data = bytearray()
+        while len(data) < length:
+            slice = length - len(data)
+            if slice > 1024:
+                data.extend(self.my_socket.recv(1024))
+            else:
+                data.extend(self.my_socket.recv(slice))
+                break
+        return bytes(data)
 
     def send_msg(self, msg):
         '''
