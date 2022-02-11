@@ -36,18 +36,20 @@ def handle_files(q):
                 file.write(temp_torrent)
 
             # update if managed to do it or not
+            status = 0
             if os.path.isfile(f'{TORRENT_ROOT}{f_name}.json'):
                 # add the torrent to the db
                 added = local_db.add_torrent(f'{f_name}.json')
                 if added:
                     print("SENDING OK")
-                    server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 1))
-                else:
-                    print("SENDING NOT OK")
-                    server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
-            else:
-                print("SENDING NOT OK")
-                server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
+                    status = 1
+            server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, status))
+            #     else:
+            #         print("SENDING NOT OK")
+            #         server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
+            # else:
+            #     print("SENDING NOT OK")
+            #     server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
 
 
 files_q = queue.Queue()
