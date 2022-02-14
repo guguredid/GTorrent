@@ -103,7 +103,16 @@ while True:
                 if f"{f}.json" not in files_in_system:
                     print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
                     server.send_msg(ip, ServerProtocol.build_delete_file(f))
-        # pass
+
+    # receive file was deleted from the monitored folder
+    elif code == '02'.encode():
+        file_name = ServerProtocol.break_recv_deleted_file(info.decode())
+        print(f"FILE {file_name} WAS DELETED FROM {ip}")
+
+    # receive file was added to the monitored folder
+    elif code == '03'.encode():
+        file_name = ServerProtocol.break_recv_added_file(info.decode())
+        print(f"FILE {file_name} WAS ADDED TO {ip}")
 
     # send torrent file
     elif code == '07'.encode():
@@ -114,7 +123,7 @@ while True:
         # print(f"MESSAGE!!! {msg}")
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}"))
 
-    # create file upload server
+    # create file upload server for the client
     elif code == '20'.encode():
         port = int(info.decode())
         # print(f"SENDING {ip} PORT {port}")

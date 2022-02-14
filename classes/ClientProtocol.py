@@ -60,7 +60,6 @@ class ClientProtocol:
         :return: str
         '''
         return f"03{file_name.ljust(10)}"
-        # pass
 
     @staticmethod
     def build_add_file_to_system(file_name, data):

@@ -46,7 +46,8 @@ class ServerProtocol:
         :param data: str
         :return: str
         '''
-        pass
+        return data.rstrip()
+        # pass
 
     @staticmethod
     def break_recv_added_file(data):
@@ -55,7 +56,8 @@ class ServerProtocol:
         :param data: str
         :return: str
         '''
-        pass
+        return data.rstrip()
+        # pass
 
     @staticmethod
     def break_recv_file(data):

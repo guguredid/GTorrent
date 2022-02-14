@@ -46,6 +46,7 @@ def handle_msg_q(q):
             info = info.decode()
             # print(f"IN 01 !!!! INFO-{info}")
             files_in_system = ClientProtocol.break_files_in_system(info)
+            files_in_system = [file.remove('.json') for file in files_in_system]
             # print(f"FILES IN THE SYSTEM: {files_in_system}")
 
         # delete a file from the monitored folder
@@ -156,7 +157,7 @@ def monitor_dir():
     # monitor the directory
     while True:
 
-        new_log = ''
+        msg = ''
 
         results = win32file.ReadDirectoryChangesW(
             hDir,
@@ -174,17 +175,17 @@ def monitor_dir():
 
         # 1 : created file
         if results[0][0] == 1:
-            new_log = f' - Created file - {results[0][1]}\n'
+            # new_log = f' - Created file - {results[0][1]}\n'
             msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
-            new_log = f' - Deleted file - {results[0][1]}\n'
+            # new_log = f' - Deleted file - {results[0][1]}\n'
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
 
         # print the LOG
-        if new_log != '':
-            print(new_log, end='')
-            print(msg)
+        if msg != '':
+            print("SENDING TO SERVER MONITOR!!")
+            server_client.send_msg(msg)
 
 
 TORRENT_SENDER_ADDRESS = "192.168.4.74"
