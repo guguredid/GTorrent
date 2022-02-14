@@ -5,6 +5,7 @@ from classes.TorrentHandlerServer import TorrentHandlerServer
 import queue
 import os
 import threading
+import json
 
 
 def handle_files(q):
@@ -106,13 +107,36 @@ while True:
 
     # receive file was deleted from the monitored folder
     elif code == '02'.encode():
+        files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_deleted_file(info.decode())
         print(f"FILE {file_name} WAS DELETED FROM {ip}")
+        # update the relevant torrent file with the changes
+        if f'{file_name}.json' in files_in_system:
+            with open(f"{TORRENT_ROOT}{tname}.json", 'r') as file:
+                torrent = json.load(file)
+                if ip in torrent["ip_list"]:
+                    print(f"REMOVING IP {ip} FROM {file_name}")
+                    torrent["ip_list"].remove(ip)
+            with open(f"{TORRENT_ROOT}{tname}.json", 'w') as file:
+                json.dump(torrent, file)
+
+
 
     # receive file was added to the monitored folder
     elif code == '03'.encode():
+        files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_added_file(info.decode())
         print(f"FILE {file_name} WAS ADDED TO {ip}")
+        # update the relevant torrent file with the changes
+        #TODO:
+        if f'{file_name}.json' in files_in_system:
+            with open(f"{TORRENT_ROOT}{tname}.json", 'r') as file:
+                torrent = json.load(file)
+                if ip in torrent["ip_list"]:
+                    print(f"ADDING IP {ip} TO {file_name}")
+                    torrent["ip_list"].append(ip)
+            with open(f"{TORRENT_ROOT}{tname}.json", 'w') as file:
+                json.dump(torrent, file)
 
     # send torrent file
     elif code == '07'.encode():

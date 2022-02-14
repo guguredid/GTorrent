@@ -46,7 +46,7 @@ def handle_msg_q(q):
             info = info.decode()
             # print(f"IN 01 !!!! INFO-{info}")
             files_in_system = ClientProtocol.break_files_in_system(info)
-            files_in_system = [file.remove('.json') for file in files_in_system]
+            files_in_system = [file.replace('.json', '') for file in files_in_system]
             # print(f"FILES IN THE SYSTEM: {files_in_system}")
 
         # delete a file from the monitored folder
@@ -175,11 +175,11 @@ def monitor_dir():
 
         # 1 : created file
         if results[0][0] == 1:
-            # new_log = f' - Created file - {results[0][1]}\n'
+            print(f' - Created file - {results[0][1]}')
             msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
-            # new_log = f' - Deleted file - {results[0][1]}\n'
+            print(f' - Deleted file - {results[0][1]}')
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
 
         # print the LOG
