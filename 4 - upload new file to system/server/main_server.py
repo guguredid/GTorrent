@@ -112,12 +112,12 @@ while True:
         print(f"FILE {file_name} WAS DELETED FROM {ip}")
         # update the relevant torrent file with the changes
         if f'{file_name}.json' in files_in_system:
-            with open(f"{TORRENT_ROOT}{tname}.json", 'r') as file:
+            with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
                 torrent = json.load(file)
                 if ip in torrent["ip_list"]:
                     print(f"REMOVING IP {ip} FROM {file_name}")
-                    torrent["ip_list"].remove(ip)
-            with open(f"{TORRENT_ROOT}{tname}.json", 'w') as file:
+                    torrent["ip_list"].replace(ip, '')
+            with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                 json.dump(torrent, file)
 
 
@@ -130,12 +130,12 @@ while True:
         # update the relevant torrent file with the changes
         #TODO:
         if f'{file_name}.json' in files_in_system:
-            with open(f"{TORRENT_ROOT}{tname}.json", 'r') as file:
+            with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
                 torrent = json.load(file)
-                if ip in torrent["ip_list"]:
+                if ip not in torrent["ip_list"]:
                     print(f"ADDING IP {ip} TO {file_name}")
-                    torrent["ip_list"].append(ip)
-            with open(f"{TORRENT_ROOT}{tname}.json", 'w') as file:
+                    torrent["ip_list"] += f";{ip}"
+            with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                 json.dump(torrent, file)
 
     # send torrent file
