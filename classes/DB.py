@@ -69,7 +69,7 @@ class DB:
         '''
         # flag - managed to delete the torrent or not
         flag = False
-        if not self._name_exist(name):
+        if self._name_exist(name):
             flag = True
             cmd = f"DELETE FROM {self.tbl_name} WHERE name='{name}'"
             self.cursor.execute(cmd)

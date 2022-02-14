@@ -116,11 +116,15 @@ while True:
                 torrent = json.load(file)
                 if ip in torrent["ip_list"]:
                     print(f"REMOVING IP {ip} FROM {file_name}")
-                    torrent["ip_list"].replace(ip, '')
-            with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
-                json.dump(torrent, file)
-
-
+                    torrent["ip_list"] = torrent["ip_list"].replace(ip, '')
+            # if there are no clients who can share the file, remove it from the system
+            if len(torrent["ip_list"]) > 0:
+                with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
+                    json.dump(torrent, file)
+            else:
+                print(f"REMOVING {file_name} FROM THE SYSTEM!")
+                os.remove(f'{TORRENT_ROOT}{file_name}.json')
+                db.delete_torrent(f'{file_name}.json')
 
     # receive file was added to the monitored folder
     elif code == '03'.encode():
@@ -128,7 +132,6 @@ while True:
         file_name = ServerProtocol.break_recv_added_file(info.decode())
         print(f"FILE {file_name} WAS ADDED TO {ip}")
         # update the relevant torrent file with the changes
-        #TODO:
         if f'{file_name}.json' in files_in_system:
             with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
                 torrent = json.load(file)
