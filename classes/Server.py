@@ -97,7 +97,9 @@ class Server:
                         if length == "":
                             self._disconnect(current_socket)
                         else:
+                            print("DATA LEN!!", length)
                             data = self.recv_data(client, int(length))
+                            print(f"IN SERER::: {data}")
                             # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop11111 - {str(e)}")

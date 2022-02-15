@@ -152,7 +152,7 @@ def handle_share(ip, id, q):
                 break
         else:
             pass
-    client.send_msg(ClientProtocol.build_disconnect())
+    # client.send_msg(ClientProtocol.build_disconnect())
     client.disconnect()
     print(f"THREAD {id} FINISHED!")
 
