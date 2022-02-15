@@ -198,6 +198,14 @@ class Server:
             print(f'[ERROR] int send_part - {str(e)}')
             self._disconnect(soc)
 
+    def close_client(self, ip):
+        '''
+        closes the connection to the given ip
+        :param ip: str
+        :return: None
+        '''
+        self._disconnect(self._get_soc_by_ip(ip))
+
     def _disconnect(self, client_socket):
         '''
         get client socket, remove from the list and close it

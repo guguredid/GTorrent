@@ -40,7 +40,8 @@ class ClientProtocol:
         :param data: str
         :return: str
         '''
-        pass
+        return data.rstrip()
+        # pass
 
     @staticmethod
     def build_send_deleted_file(file_name):
@@ -50,7 +51,6 @@ class ClientProtocol:
         :return: str
         '''
         return f"02{file_name.ljust(10)}"
-        # pass
 
     @staticmethod
     def build_add_file(file_name):
@@ -79,7 +79,6 @@ class ClientProtocol:
         :return: tuple
         '''
         return (data[:10].rstrip(), data[10:])
-        # pass
 
     @staticmethod
     def break_recv_new_file(data):
@@ -88,7 +87,8 @@ class ClientProtocol:
         :param data: str
         :return: str
         '''
-        pass
+        return data.rstrip()
+        # pass
 
     @staticmethod
     def build_ask_torrent(tname):
@@ -109,7 +109,6 @@ class ClientProtocol:
         :return: Torrent(???)
         :return: str
         '''
-
         pass
 
     @staticmethod
@@ -117,9 +116,10 @@ class ClientProtocol:
         '''
         return a tuple with data about the ip and its status (added\removed)
         :param data: str
-        :return: str
+        :return: tuple
         '''
-        pass
+        return data[0], data[1:]
+        # pass
 
     @staticmethod
     def build_ask_part(file_name, part):
@@ -184,7 +184,8 @@ class ClientProtocol:
         return a message for disconnecting from a sharer
         :return: str
         '''
-        pass
+        return "12"
+        # pass
 
 
 

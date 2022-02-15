@@ -51,10 +51,11 @@ def handle_msg_q(q):
 
         # delete a file from the monitored folder
         elif code == '02':
-            info = info.decode()
+            # info = info.decode()
+            file_name = ClientProtocol.break_delete_file(info.decode())
             # print(f"DELETING {info} FROM THE MONITORED FOLDER!")
-            if os.path.exists(f"{FILES_ROOT}{info}"):
-                os.remove(f"{FILES_ROOT}{info}")
+            if os.path.exists(f"{FILES_ROOT}{file_name}"):
+                os.remove(f"{FILES_ROOT}{file_name}")
 
         # receive the uploaded file's status (managed to upload or not)
         elif code == '05':
@@ -72,6 +73,18 @@ def handle_msg_q(q):
         elif code == '07':
             # tdata = ClientProtocol.break_recv_torrent(info)
             tdata = info.decode()
+
+        # receive new file that was added to the system
+        elif code == '06':
+            file_name = ClientProtocol.break_recv_new_file(info.decode())
+            print(f"NEW FILE ADDED TO THE SYSTEM: {file_name}")
+            if file_name not in files_in_system:
+                files_in_system.append(file_name)
+
+        # receive an update about ip address (for downloading)
+        elif code == '08':
+            ip, status = ClientProtocol.break_update_ip(info.decode())
+            print(f"RECEIVED UPDATE FOR {ip}======{status}")
 
         # asked to send file part
         elif code == '10':
@@ -94,6 +107,10 @@ def handle_msg_q(q):
                 file_event.set()
             else:
                 print('THE HASH IS NOT OKAY!')
+
+        # client disconnect from the sharing server
+        elif code == '12':
+            server.close_client(ip)
 
         # receive port for file socket
         elif code == '20':
@@ -135,6 +152,7 @@ def handle_share(ip, id, q):
                 break
         else:
             pass
+    client.send_msg(ClientProtocol.build_disconnect())
     client.disconnect()
     print(f"THREAD {id} FINISHED!")
 
@@ -184,7 +202,7 @@ def monitor_dir():
 
         # print the LOG
         if msg != '':
-            print("SENDING TO SERVER MONITOR!!")
+            print(f"SENDING TO SERVER MONITOR!! {msg}")
             server_client.send_msg(msg)
 
 
@@ -226,8 +244,12 @@ server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one ')
 
 if action.lower() == 'u':
-    upload_name = input("enter the name of the file you want: ")
-    only_name = upload_name.split('\\')[-1]
+    # wait until received filename with len <= 10
+    not_ok = True
+    while not_ok:
+        upload_name = input("enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
+        only_name = upload_name.split('\\')[-1]
+        not_ok = len(only_name) <= 0
     # print(f"THE FILE NAME ONLY IS {upload_name.split('\\')[-1]}")
     with open(upload_name, 'rb') as f:
         data = f.read()
