@@ -64,7 +64,6 @@ class Server:
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                         # send the client a list of the files in the server
                         self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
-                        #TODO: FIX GETTING THE FILES FROM THE CLIENT!
                         client_files = client.recv(int(client.recv(6).decode())).decode()[2:]
                         print(f"FILES THE CLIENT HAS: {client_files}")
                         self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
@@ -78,6 +77,7 @@ class Server:
                             if length == "":
                                 self._disconnect(client)
                             else:
+                                # print("PORTTTT", self.port)
                                 data = self.recv_data(client, int(length))
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
@@ -97,17 +97,17 @@ class Server:
                         if length == "":
                             self._disconnect(current_socket)
                         else:
-                            print("DATA LEN!!", length)
-                            data = self.recv_data(client, int(length))
-                            print(f"IN SERER::: {data}")
+                            # print("DATA LEN!!", length, self.port)
+                            data = self.recv_data(current_socket, int(length))
+                            # print(f"IN SERVER::: {data}")
                             # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop11111 - {str(e)}")
                         self._disconnect(current_socket)
                     else:
                         # if the client did not disconnect, push the msg to the queue
-                        if client in self._users.keys():
-                            self.msg_q.put((self._get_ip_by_socket(client), data))
+                        if current_socket in self._users.keys():
+                            self.msg_q.put((self._get_ip_by_socket(current_socket), data))
 
     def recv_data(self, soc, length):
         '''
@@ -116,6 +116,7 @@ class Server:
         :param len: int
         :return: bytes
         '''
+
         data = bytearray()
         while len(data) < length:
             slice = length - len(data)
@@ -132,7 +133,9 @@ class Server:
         :param soc: Socket
         :return: str
         '''
-        return self._users[soc]
+        if soc in self._users.keys():
+            return self._users[soc]
+        return None
 
     def _get_soc_by_ip(self, ip):
         '''

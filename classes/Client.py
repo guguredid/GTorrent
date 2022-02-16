@@ -95,6 +95,8 @@ class Client:
                     print(f'ERROR IN CLIENT! {str(e)}')
                     self.disconnect()
                     break
+                else:
+                    print("SENT TO SERVER:", msg)
 
     def disconnect(self):
         print("=======================DISCONNCTED")
