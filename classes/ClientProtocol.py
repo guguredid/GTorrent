@@ -118,7 +118,7 @@ class ClientProtocol:
         :param data: str
         :return: tuple
         '''
-        return data[0], data[1:]
+        return data[0], int(data[1:])
         # pass
 
     @staticmethod

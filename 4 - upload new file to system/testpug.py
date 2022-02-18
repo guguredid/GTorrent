@@ -8,14 +8,68 @@ from classes.TorrentHandlerServer import TorrentHandlerServer
 #     print(hash_list[i] == torrent_hash[i])
 
 #29,543
-print('LEFT IN THE END:', 29543%1024, f' , NEED TO ADD {1024-(29543%1024)} SPACES!')
-print(29543//1024)
+# print('LEFT IN THE END:', 29543%1024, f' , NEED TO ADD {1024-(29543%1024)} SPACES!')
+# print(29543//1024)
+#
+# with open('cat.jpg', 'rb') as f:
+#     data = f.read()
+#     print(len(data))
+#     print(len(data.rstrip()))
 
-with open('cat.jpg', 'rb') as f:
-    data = f.read()
-    print(len(data))
-    print(len(data.rstrip()))
+import win32con
+import win32file
+import threading
 
+def monitor_dir():
+    '''
+    monitors changes in the files directory, and reports them
+    :return: None
+    '''
+    hDir = win32file.CreateFile(
+        FILES_ROOT,
+        win32con.FILE_SHARE_READ,
+        win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE | win32con.FILE_SHARE_DELETE,
+        None,
+        win32con.OPEN_EXISTING,
+        win32con.FILE_FLAG_BACKUP_SEMANTICS,
+        None
+    )
 
+    # monitor the directory
+    while True:
 
+        msg = ''
 
+        results = win32file.ReadDirectoryChangesW(
+            hDir,
+            1024,
+            True,
+            win32con.FILE_NOTIFY_CHANGE_FILE_NAME |
+            win32con.FILE_NOTIFY_CHANGE_DIR_NAME |
+            win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
+            win32con.FILE_NOTIFY_CHANGE_SIZE |
+            win32con.FILE_NOTIFY_CHANGE_LAST_WRITE |
+            win32con.FILE_NOTIFY_CHANGE_SECURITY |
+            # NEW
+            win32con.FILE_NOTIFY_CHANGE_SIZE,
+            None,
+            None
+        )
+
+        #TODO: SEND THE SERVER WHEN FINISH DOWNLOADING A FILE BY CLOSING IT???
+
+        print(f"RESULT - {results}")
+
+        # 1 : created file
+        if results[0][0] == 1:
+            print(f' - Created file - {results[0][1]}')
+
+        # 2 : deleted file
+        elif results[0][0] == 2:
+            print(f' - Deleted file - {results[0][1]}')
+
+        elif results[0][0] == 3:
+            print(f' - resize file - {results[0][1]}')
+
+FILES_ROOT = "C:\\Test"
+threading.Thread(target=monitor_dir).start()

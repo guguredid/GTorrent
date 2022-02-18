@@ -44,23 +44,18 @@ def handle_msg_q(q):
         # receive files from the server
         if code == '01':
             info = info.decode()
-            # print(f"IN 01 !!!! INFO-{info}")
             files_in_system = ClientProtocol.break_files_in_system(info)
             files_in_system = [file.replace('.json', '') for file in files_in_system]
-            # print(f"FILES IN THE SYSTEM: {files_in_system}")
 
         # delete a file from the monitored folder
         elif code == '02':
-            # info = info.decode()
             file_name = ClientProtocol.break_delete_file(info.decode())
-            # print(f"DELETING {info} FROM THE MONITORED FOLDER!")
             if os.path.exists(f"{FILES_ROOT}{file_name}"):
                 os.remove(f"{FILES_ROOT}{file_name}")
 
         # receive the uploaded file's status (managed to upload or not)
         elif code == '05':
             info = info.decode()
-            # print(f"UPLOADING FILE, GOT {info}")
             file_name, status = ClientProtocol.break_added_status(info)
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
@@ -85,6 +80,15 @@ def handle_msg_q(q):
         elif code == '08':
             ip, status = ClientProtocol.break_update_ip(info.decode())
             print(f"RECEIVED UPDATE FOR {ip}======{status}")
+            # check if the ip is sharing or stopped sharing
+            if status == 1:
+                print(f"{ip} CAN NOW SHARE THE FILE WE NEED!")
+                thread_list.append(threading.Thread(target=handle_share, args=(ip, len(thread_list)+1, msg_q)))
+                thread_list[-1].start()
+                thread_list[-1].join()
+            elif status == 0:
+                print(f"{ip} STOPPED SHARING THE FILE WE NEED!")
+                pass
 
         # asked to send file part
         elif code == '10':
@@ -115,8 +119,6 @@ def handle_msg_q(q):
         # receive port for file socket
         elif code == '20':
             port = int(info.decode())
-            # print(f"RECIEVED PORT {port}")
-            # file_socket.connect((TORRENT_SENDER_ADDRESS, port))
             file_server_client = Client(port, TORRENT_SENDER_ADDRESS, msg_q)
 
 
@@ -186,12 +188,17 @@ def monitor_dir():
             win32con.FILE_NOTIFY_CHANGE_ATTRIBUTES |
             win32con.FILE_NOTIFY_CHANGE_SIZE |
             win32con.FILE_NOTIFY_CHANGE_LAST_WRITE |
-            win32con.FILE_NOTIFY_CHANGE_SECURITY,
+            win32con.FILE_NOTIFY_CHANGE_SECURITY |
+            # NEW
+            win32con.FILE_NOTIFY_CHANGE_SIZE,
             None,
             None
         )
 
+        #TODO: SEND THE SERVER WHEN FINISH DOWNLOADING A FILE BY CLOSING IT???
+
         # 1 : created file
+        #TODO: DO I NEED CREATE? IS IT OK TO LEAVE A EMPTY FILE, AND UPDATE THE SERVER ONLY WHEN THE SIZE IS CHANGING?
         if results[0][0] == 1:
             print(f' - Created file - {results[0][1]}')
             msg = ClientProtocol.build_add_file(results[0][1])
@@ -199,6 +206,12 @@ def monitor_dir():
         elif results[0][0] == 2:
             print(f' - Deleted file - {results[0][1]}')
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
+        # 3: resize a file
+        elif results[0][0] == 3:
+            print(f' - resize file - {results[0][1]}')
+            # if the download is over, that's when we send the server the message
+            if finish_download:
+                msg = ClientProtocol.build_add_file(results[0][1])
 
         # print the LOG
         if msg != '':
@@ -290,6 +303,9 @@ while True:
                 # list of the threads building the file
                 thread_list = []
 
+                # flag - so the monitored won't send the server until we finish downloading the file
+                finish_download = False
+
                 # create the threads for getting the file's parts
                 for i in range(len(ip_list)):
                     thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
@@ -299,6 +315,8 @@ while True:
                 # wait for all the threads to finish
                 for thread in thread_list:
                     thread.join()
+
+                finish_download = True
 
                 # check the whole hash
                 with open(f'{FILES_ROOT}{tname}', 'rb') as file:
