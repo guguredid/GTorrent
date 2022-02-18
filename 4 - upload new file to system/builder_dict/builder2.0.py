@@ -201,7 +201,9 @@ def monitor_dir():
         #TODO: DO I NEED CREATE? IS IT OK TO LEAVE A EMPTY FILE, AND UPDATE THE SERVER ONLY WHEN THE SIZE IS CHANGING?
         if results[0][0] == 1:
             print(f' - Created file - {results[0][1]}')
-            msg = ClientProtocol.build_add_file(results[0][1])
+            # if a different file then the one we're downloading is created - report it
+            if tname != results[0][1]:
+                msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
             print(f' - Deleted file - {results[0][1]}')
