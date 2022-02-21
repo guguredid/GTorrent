@@ -78,7 +78,7 @@ class Server:
                                 self._disconnect(client)
                             else:
                                 # print("PORTTTT", self.port)
-                                data = self.recv_data(client, int(length))
+                                data = self._recv_data(client, int(length))
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
                             self._disconnect(client)
@@ -98,7 +98,7 @@ class Server:
                             self._disconnect(current_socket)
                         else:
                             # print("DATA LEN!!", length, self.port)
-                            data = self.recv_data(current_socket, int(length))
+                            data = self._recv_data(current_socket, int(length))
                             # print(f"IN SERVER::: {data}")
                             # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
@@ -109,7 +109,7 @@ class Server:
                         if current_socket in self._users.keys():
                             self.msg_q.put((self._get_ip_by_socket(current_socket), data))
 
-    def recv_data(self, soc, length):
+    def _recv_data(self, soc, length):
         '''
         returns the data from the socket, gets in chunks of 1024
         :param soc: Socket
@@ -171,12 +171,24 @@ class Server:
         :return: None
         '''
         soc = self._get_soc_by_ip(ip)
-        try:
-            soc.send(str(len(msg)).zfill(6).encode())
-            soc.send(msg.encode())
-        except Exception as e:
-            print(f'[ERROR] int send_msg - {str(e)}')
-            self._disconnect(soc)
+        if soc is not None:
+            try:
+                soc.send(str(len(msg)).zfill(6).encode())
+                soc.send(msg.encode())
+            except Exception as e:
+                print(f'[ERROR] int send_msg - {str(e)}')
+                self._disconnect(soc)
+        else:
+            print("SOC IS NONE!")
+
+    def send_all(self, msg):
+        '''
+        send the given message to all clients
+        :param msg: str
+        :return: None
+        '''
+        for user_ip in self._users.values():
+            threading.Thread(target=self.send_msg, args=(user_ip, msg,)).start()
 
     def send_file(self, ip, msg):
         '''

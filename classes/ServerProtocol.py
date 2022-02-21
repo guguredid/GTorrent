@@ -99,7 +99,8 @@ class ServerProtocol:
         :param file_name: str
         :return: str
         '''
-        pass
+        return f"06{file_name.zfill(6)}"
+        # pass
 
     @staticmethod
     def break_recv_torrent_name(data):

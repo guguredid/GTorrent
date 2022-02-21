@@ -64,17 +64,17 @@ def handle_msg_q(q):
             else:
                 print("FILE WAS NOT ADDED")
 
-        # receive torrent file
-        elif code == '07':
-            # tdata = ClientProtocol.break_recv_torrent(info)
-            tdata = info.decode()
-
         # receive new file that was added to the system
         elif code == '06':
             file_name = ClientProtocol.break_recv_new_file(info.decode())
             print(f"NEW FILE ADDED TO THE SYSTEM: {file_name}")
             if file_name not in files_in_system:
                 files_in_system.append(file_name)
+
+        # receive torrent file
+        elif code == '07':
+            # tdata = ClientProtocol.break_recv_torrent(info)
+            tdata = info.decode()
 
         # receive an update about ip address (for downloading)
         elif code == '08':
@@ -164,6 +164,7 @@ def monitor_dir():
     monitors changes in the files directory, and reports them
     :return: None
     '''
+    global tname
     hDir = win32file.CreateFile(
         FILES_ROOT,
         win32con.FILE_SHARE_READ,
@@ -200,20 +201,25 @@ def monitor_dir():
         # 1 : created file
         #TODO: DO I NEED CREATE? IS IT OK TO LEAVE A EMPTY FILE, AND UPDATE THE SERVER ONLY WHEN THE SIZE IS CHANGING?
         if results[0][0] == 1:
+            # print(f' - Created file - {results[0][1]}')
+            # # if a different file then the one we're downloading is created - report it
+            # if tname != results[0][1]:
+            #     msg = ClientProtocol.build_add_file(results[0][1])
+
+
+
             print(f' - Created file - {results[0][1]}')
-            # if a different file then the one we're downloading is created - report it
-            if tname != results[0][1]:
-                msg = ClientProtocol.build_add_file(results[0][1])
+            msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
             print(f' - Deleted file - {results[0][1]}')
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
         # 3: resize a file
-        elif results[0][0] == 3:
-            print(f' - resize file - {results[0][1]}')
-            # if the download is over, that's when we send the server the message
-            if finish_download:
-                msg = ClientProtocol.build_add_file(results[0][1])
+        # elif results[0][0] == 3:
+        #     print(f' - resize file - {results[0][1]}')
+        #     # if the download is over, that's when we send the server the message
+        #     if finish_download:
+        #         msg = ClientProtocol.build_add_file(results[0][1])
 
         # print the LOG
         if msg != '':
@@ -223,9 +229,9 @@ def monitor_dir():
 
 # TORRENT_SENDER_ADDRESS = "192.168.4.74"
 
-# TORRENT_SENDER_ADDRESS = "192.168.4.83"
+TORRENT_SENDER_ADDRESS = "192.168.4.83"
 # TORRENT_SENDER_ADDRESS = "192.168.4.93"
-TORRENT_SENDER_ADDRESS = "192.168.4.91"
+# TORRENT_SENDER_ADDRESS = "192.168.4.91"
 # TORRENT_SENDER_ADDRESS = "192.168.4.85"
 # TORRENT_SENDER_ADDRESS = "127.0.0.1"
 my_socket = socket.socket()
@@ -257,6 +263,9 @@ files_in_system = ''
 my_files = os.listdir(FILES_ROOT)
 # print(f"FILES IN GTORRENT: {my_files}")
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
+
+tname = ''
+finish_download = False
 
 # main loop
 while True:

@@ -44,13 +44,11 @@ def handle_files(q):
                 if added:
                     print("SENDING OK")
                     status = 1
-            server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, status))
-            #     else:
-            #         print("SENDING NOT OK")
-            #         server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
-            # else:
-            #     print("SENDING NOT OK")
-            #     server_by_ip[ip].send_msg(ip, ServerProtocol.build_send_added_status(f_name, 0))
+            server.send_msg(ip, ServerProtocol.build_send_added_status(f_name, status))
+            # if managed to upload the file, update all the users
+            if status == 1:
+                server.send_all(ServerProtocol.build_send_file(f_name))
+
 
 
 files_q = queue.Queue()
@@ -118,7 +116,7 @@ while True:
                     print(f"REMOVING IP {ip} FROM {file_name}")
                     torrent["ip_list"] = torrent["ip_list"].replace(ip, '')
             # if there are no clients who can share the file, remove it from the system
-            if len(torrent["ip_list"]) > 0 or torrent["ip_list"] == ";":
+            if len(torrent["ip_list"]) > 0 and torrent["ip_list"] != ";":
                 with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                     json.dump(torrent, file)
             else:
