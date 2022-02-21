@@ -27,7 +27,6 @@ class ServerProtocol:
         :return: list
         '''
         return data.split(';')
-        # pass
 
     @staticmethod
     def build_delete_file(file_name):
@@ -37,7 +36,6 @@ class ServerProtocol:
         :return: str
         '''
         return f"02{file_name.ljust(10)}"
-        # pass
 
     @staticmethod
     def break_recv_deleted_file(data):
@@ -47,7 +45,6 @@ class ServerProtocol:
         :return: str
         '''
         return data.rstrip()
-        # pass
 
     @staticmethod
     def break_recv_added_file(data):
@@ -57,7 +54,6 @@ class ServerProtocol:
         :return: str
         '''
         return data.rstrip()
-        # pass
 
     @staticmethod
     def break_recv_file(data):
@@ -68,9 +64,8 @@ class ServerProtocol:
         '''
         file_name = data[:10].decode().rstrip()
         data = data[10:]
-        print(111111, len(data))
+        # print(111111, len(data))
         return file_name, data
-        # pass
 
     @staticmethod
     def build_file_deleted(file):
@@ -90,7 +85,6 @@ class ServerProtocol:
         :return: str
         '''
         return f"05{name.ljust(10)}{status}"
-        # pass
 
     @staticmethod
     def build_send_file(file_name):
@@ -100,7 +94,6 @@ class ServerProtocol:
         :return: str
         '''
         return f"06{file_name.zfill(6)}"
-        # pass
 
     @staticmethod
     def break_recv_torrent_name(data):
@@ -110,7 +103,6 @@ class ServerProtocol:
         :return: str
         '''
         return data.rstrip()
-        # pass
 
     @staticmethod
     def build_send_torrent(tname):
@@ -120,14 +112,9 @@ class ServerProtocol:
         :return: str
         '''
         data = ''
-        # print(f"IN FUNCTION: {tname}")
-        # check if the torrent file exists
-        # if os.path.exists(tname):
         if os.path.exists(f"{tname}.json"):
-            # print('EXIST!!')
             with open(f"{tname}.json", 'r') as file:
                 data = file.read()
-        # print(f"THE DATA IS {data}")
         return f"07{data}"
 
     @staticmethod

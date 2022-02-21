@@ -60,7 +60,8 @@ def handle_msg_q(q):
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
                 print("FILE ADDED SUCCESSFULLY!")
-                shutil.copyfile(upload_name, f"{FILES_ROOT}{only_name}")
+                shutil.copyfile(upload_name, f"{FILES_ROOT}{file_name}")
+                my_files.append(file_name)
             else:
                 print("FILE WAS NOT ADDED")
 
@@ -93,7 +94,8 @@ def handle_msg_q(q):
         # asked to send file part
         elif code == '10':
             file_name, part = ClientProtocol.break_ask_part(info)
-            server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
+            if file_name in my_files:
+                server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
         elif code == '11':
@@ -261,7 +263,6 @@ file_server_client = None
 files_in_system = ''
 
 my_files = os.listdir(FILES_ROOT)
-# print(f"FILES IN GTORRENT: {my_files}")
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''

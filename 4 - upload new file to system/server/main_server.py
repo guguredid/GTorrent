@@ -90,9 +90,9 @@ while True:
 
     # receive files in the client's monitored folder
     elif code == '01'.encode():
-        print(f"INFOOOO {info}")
+        # print(f"INFOOOO {info}")
         client_files = ServerProtocol.break_recv_file_names(info.decode())
-        print("CLIENT FILES!!! ", client_files)
+        # print("CLIENT FILES!!! ", client_files)
         if '' in client_files:
             client_files.remove('')
         if len(client_files) > 0:
