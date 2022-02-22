@@ -175,7 +175,9 @@ class Server:
         if soc is not None:
             try:
                 soc.send(str(len(msg)).zfill(6).encode())
-                soc.send(msg.encode())
+                if type(msg) == str:
+                    msg = msg.encode()
+                soc.send(msg)
             except Exception as e:
                 print(f'[ERROR] int send_msg - {str(e)}')
                 self._disconnect(soc)

@@ -113,9 +113,9 @@ class ServerProtocol:
         '''
         data = ''
         if os.path.exists(f"{tname}.json"):
-            with open(f"{tname}.json", 'r') as file:
+            with open(f"{tname}.json", 'rb') as file:
                 data = file.read()
-        return f"07{data}"
+        return "07".encode() + data
 
     @staticmethod
     def build_send_port(port):

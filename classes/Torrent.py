@@ -1,4 +1,5 @@
-import ast
+# import ast
+import json
 '''
 file for a class representing torrent file
 '''
@@ -15,14 +16,18 @@ class Torrent:
         :param json_str: str
         '''
         # convert the data from string to dictionary
-        t_dict = ast.literal_eval(json_str)
-
-        # data from the torrent file
-        self.torrent_name = t_dict["name"].replace('.torrent', '')
-        self.num_parts = t_dict["num"]
-        self.hash_list = t_dict["hash_list"].split(';')
-        self.complete_hash = t_dict["complete_hash"]
-        self.ip_list = t_dict["ip_list"].split(';')
+        try:
+            # t_dict = ast.literal_eval(json_str)
+            t_dict =json.loads(json_str)
+        except Exception as e:
+            print(f"IN TORRENT! {str(e)}")
+        else:
+            # data from the torrent file
+            self.torrent_name = t_dict["name"].replace('.torrent', '')
+            self.num_parts = t_dict["num"]
+            self.hash_list = t_dict["hash_list"].split(';')
+            self.complete_hash = t_dict["complete_hash"]
+            self.ip_list = t_dict["ip_list"].split(';')
 
     def get_name(self):
         '''

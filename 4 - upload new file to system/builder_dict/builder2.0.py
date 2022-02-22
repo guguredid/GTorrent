@@ -74,7 +74,6 @@ def handle_msg_q(q):
 
         # receive torrent file
         elif code == '07':
-            # tdata = ClientProtocol.break_recv_torrent(info)
             tdata = info.decode()
 
         # receive an update about ip address (for downloading)
@@ -93,11 +92,8 @@ def handle_msg_q(q):
 
         # asked to send file part
         elif code == '10':
-            print("SOMEONE ASKED FOR PART!")
             file_name, part = ClientProtocol.break_ask_part(info)
-            print(f"ASKED FOR {file_name} PART {part}")
             if file_name in my_files:
-                print("I HAVE THIS FILE!")
                 server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
