@@ -93,8 +93,11 @@ def handle_msg_q(q):
 
         # asked to send file part
         elif code == '10':
+            print("SOMEONE ASKED FOR PART!")
             file_name, part = ClientProtocol.break_ask_part(info)
+            print(f"ASKED FOR {file_name} PART {part}")
             if file_name in my_files:
+                print("I HAVE THIS FILE!")
                 server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
@@ -263,6 +266,7 @@ file_server_client = None
 files_in_system = ''
 
 my_files = os.listdir(FILES_ROOT)
+print("THE FILES I HAVE::: ", my_files)
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''
@@ -279,7 +283,7 @@ while True:
             upload_name = input("enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
             only_name = upload_name.split('\\')[-1]
             not_ok = len(only_name) > 10
-        # print(f"THE FILE NAME ONLY IS {upload_name.split('\\')[-1]}")
+        print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
         with open(upload_name, 'rb') as f:
             data = f.read()
         if file_server_client is not None:

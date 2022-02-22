@@ -90,6 +90,7 @@ class Server:
                             else:
                                 self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
+                    print("HEREEEE")
                     # receive data from existing client
                     try:
                         length = current_socket.recv(6).decode()
@@ -208,11 +209,12 @@ class Server:
         :return: None
         '''
         soc = self._get_soc_by_ip(ip)
+        print(1111111, soc, self._users[soc])
         try:
             soc.send(str(len(msg)).zfill(6).encode())
             soc.send(msg)
         except Exception as e:
-            print(f'[ERROR] int send_part - {str(e)}')
+            print(f'[ERROR] in send_part - {str(e)}')
             self._disconnect(soc)
 
     def close_client(self, ip):

@@ -31,7 +31,6 @@ class ClientProtocol:
         if len(files) > 0:
             files_part = ';'.join(files)
         return f"01{files_part}"
-        # pass
 
     @staticmethod
     def break_delete_file(data):
@@ -41,7 +40,6 @@ class ClientProtocol:
         :return: str
         '''
         return data.rstrip()
-        # pass
 
     @staticmethod
     def build_send_deleted_file(file_name):
@@ -88,7 +86,6 @@ class ClientProtocol:
         :return: str
         '''
         return data.rstrip()
-        # pass
 
     @staticmethod
     def build_ask_torrent(tname):
@@ -97,9 +94,7 @@ class ClientProtocol:
         :param tname: str
         :return: str
         '''
-        # code 07
         return f"07{tname.ljust(10)}"
-        pass
 
     @staticmethod
     def break_recv_torrent(data):
@@ -119,7 +114,6 @@ class ClientProtocol:
         :return: tuple
         '''
         return data[0], int(data[1:])
-        # pass
 
     @staticmethod
     def build_ask_part(file_name, part):
@@ -129,9 +123,7 @@ class ClientProtocol:
         :param part: int
         :return: str
         '''
-        # return f"10{file_name.ljust(10)}{str(part).zfill(4)}part"
         return f"10{file_name.ljust(10)}{part}"
-        # pass
 
     @staticmethod
     def break_ask_part(data):
@@ -140,10 +132,8 @@ class ClientProtocol:
         :param data: bytes
         :return: tuple
         '''
-        # return (data[2:12].decode(), int(data[12:16]), data[16:])
         data = data.decode()
-        return data[:10], int(data[10:])
-        # pass
+        return data[:10].rstrip(), int(data[10:])
 
     @staticmethod
     def break_recv_part(data):
@@ -152,10 +142,6 @@ class ClientProtocol:
         :param data: bytes
         :return: tuple
         '''
-        # file_name = data[2:12].decode().rstrip()
-        # current_chunk = int(data[12:16]).decode()
-        # chunk = data[16:]
-        # return (file_name, current_chunk, chunk)
         return (data[2:12].decode().rstrip(), int(data[12:16]), data[16:])
 
     @staticmethod
@@ -185,13 +171,3 @@ class ClientProtocol:
         :return: str
         '''
         return "12"
-        # pass
-
-
-
-
-
-
-
-
-
