@@ -297,7 +297,10 @@ while True:
             while tdata == '~':
                 print('waiting for torrent...')
 
-            if tdata != '':
+            if tdata == '!':
+                print("Downloading the file is not available at the moment...")
+
+            elif tdata != '':
                 # print(f"RECEIVED TORRENT: {tdata}")
                 t = Torrent(tdata)
                 # data from the torrent file

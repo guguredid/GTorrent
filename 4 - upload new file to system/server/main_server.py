@@ -69,7 +69,6 @@ db = DB("GTorrent")
 
 print(f"FILES IN DB: {db.get_torrents()}")
 
-#TODO: CREATE C:\GTorrent IF DOES NOT EXIST
 if TORRENT_ROOT != '' and not os.path.exists(TORRENT_ROOT):
     os.mkdir(TORRENT_ROOT)
 
@@ -102,6 +101,8 @@ while True:
                 if f"{f}.json" not in files_in_system:
                     print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
                     server.send_msg(ip, ServerProtocol.build_delete_file(f))
+            # update existing torrent files if the files deleted from the client
+
 
     # receive file was deleted from the monitored folder
     elif code == '02'.encode():
@@ -147,9 +148,9 @@ while True:
 
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
         # print(f"SENDING TORRENT FOR {tname}")
-        msg = ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}")
+        # msg = ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}")
         # print(f"MESSAGE!!! {msg}")
-        server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}"))
+        server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}", server.get_ip_list()))
 
     # create file upload server for the client
     elif code == '20'.encode():

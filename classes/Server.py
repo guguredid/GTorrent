@@ -211,13 +211,20 @@ class Server:
         :return: None
         '''
         soc = self._get_soc_by_ip(ip)
-        print(1111111, soc, self._users[soc])
+        # print(1111111, soc, self._users[soc])
         try:
             soc.send(str(len(msg)).zfill(6).encode())
             soc.send(msg)
         except Exception as e:
             print(f'[ERROR] in send_part - {str(e)}')
             self._disconnect(soc)
+
+    def get_ip_list(self):
+        '''
+        return list of connected ips
+        :return: list
+        '''
+        return self._users.values()
 
     def close_client(self, ip):
         '''

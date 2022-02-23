@@ -105,16 +105,21 @@ class ServerProtocol:
         return data.rstrip()
 
     @staticmethod
-    def build_send_torrent(tname):
+    def build_send_torrent(tname, ip_list):
         '''
         return a message for sending a torrent name to the user
         :param tname: str
+        :param ip_list: list
         :return: str
         '''
-        data = ''
+        data = '!'.encode()
         if os.path.exists(f"{tname}.json"):
             with open(f"{tname}.json", 'rb') as file:
                 data = file.read()
+            # check that there is at least one connected user that can share the file
+            someone_connected = [ip.encode() in data for ip in ip_list]
+            if True not in someone_connected:
+                data = '!'.encode()
         return "07".encode() + data
 
     @staticmethod
