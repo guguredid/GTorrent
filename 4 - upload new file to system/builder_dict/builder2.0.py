@@ -135,6 +135,9 @@ def handle_share(ip, id, q):
 
     current_chunk = ''
     client = Client(2000, ip, q)
+
+    print(f"CONNECTING TO {ip}")
+
     while len(chunks_to_write) > 0 or len(chunks_busy) > 0:
         if current_chunk not in chunks_busy:
             if len(chunks_to_write) > 0:
@@ -301,45 +304,48 @@ while True:
                 print("Downloading the file is not available at the moment...")
 
             elif tdata != '':
-                # print(f"RECEIVED TORRENT: {tdata}")
+                print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
                 t = Torrent(tdata)
-                # data from the torrent file
-                tname = t.get_name().replace('.torrent', '')
-
-                hash_list = t.get_parts_hash()
-                chunks_num = len(hash_list)
-                whole_hash = t.get_hash()
-                ip_list = t.get_ip_list()
-
-                # list of the chunks still needed
-                chunks_to_write = [i for i in range(1, chunks_num + 1)]
-                # list of the chunks being taken care of
-                chunks_busy = []
-                # list of the threads building the file
-                thread_list = []
-
-                # flag - so the monitored won't send the server until we finish downloading the file
-                finish_download = False
-
-                # create the threads for getting the file's parts
-                for i in range(len(ip_list)):
-                    thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
-                # start all the threads and wait for all of them to finish
-                for thread in thread_list:
-                    thread.start()
-                # wait for all the threads to finish
-                for thread in thread_list:
-                    thread.join()
-
-                finish_download = True
-
-                # check the whole hash
-                with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                    whole_data = file.read().rstrip()
-                if encrypt(whole_data) == whole_hash:
-                    print('THE FILE IS OK!')
+                if not t.is_ok():
+                    print("There was an error with the torrent file...")
                 else:
-                    print('THE FILE IS NOT OK!')
+                    # data from the torrent file
+                    tname = t.get_name().replace('.torrent', '')
+
+                    hash_list = t.get_parts_hash()
+                    chunks_num = len(hash_list)
+                    whole_hash = t.get_hash()
+                    ip_list = t.get_ip_list()
+
+                    # list of the chunks still needed
+                    chunks_to_write = [i for i in range(1, chunks_num + 1)]
+                    # list of the chunks being taken care of
+                    chunks_busy = []
+                    # list of the threads building the file
+                    thread_list = []
+
+                    # flag - so the monitored won't send the server until we finish downloading the file
+                    finish_download = False
+
+                    # create the threads for getting the file's parts
+                    for i in range(len(ip_list)):
+                        thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
+                    # start all the threads and wait for all of them to finish
+                    for thread in thread_list:
+                        thread.start()
+                    # wait for all the threads to finish
+                    for thread in thread_list:
+                        thread.join()
+
+                    finish_download = True
+
+                    # check the whole hash
+                    with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                        whole_data = file.read().rstrip()
+                    if encrypt(whole_data) == whole_hash:
+                        print('THE FILE IS OK!')
+                    else:
+                        print('THE FILE IS NOT OK!')
             else:
                 print('There is no such file in the server!')
         else:

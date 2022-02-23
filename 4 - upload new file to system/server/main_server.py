@@ -116,6 +116,7 @@ while True:
                 if ip in torrent["ip_list"]:
                     print(f"REMOVING IP {ip} FROM {file_name}")
                     torrent["ip_list"] = torrent["ip_list"].replace(ip, '')
+                    torrent["ip_list"] = torrent["ip_list"].strip(';')
             # if there are no clients who can share the file, remove it from the system
             if len(torrent["ip_list"]) > 0 and torrent["ip_list"] != ";":
                 with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:

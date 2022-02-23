@@ -15,19 +15,28 @@ class Torrent:
         initializing a torrent object
         :param json_str: str
         '''
+        self.ok = False
         # convert the data from string to dictionary
         try:
             # t_dict = ast.literal_eval(json_str)
-            t_dict =json.loads(json_str)
+            t_dict = json.loads(json_str)
         except Exception as e:
             print(f"IN TORRENT! {str(e)}")
         else:
+            self.ok = True
             # data from the torrent file
             self.torrent_name = t_dict["name"].replace('.torrent', '')
             self.num_parts = t_dict["num"]
             self.hash_list = t_dict["hash_list"].split(';')
             self.complete_hash = t_dict["complete_hash"]
             self.ip_list = t_dict["ip_list"].split(';')
+
+    def is_ok(self):
+        '''
+        return the flag - managed to turn the json string into Torrent object or not
+        :return: str
+        '''
+        return self.ok
 
     def get_name(self):
         '''

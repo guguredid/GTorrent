@@ -50,10 +50,11 @@ class Client:
                     if length == '':
                         self.disconnect()
                     else:
-                        msg = self.recv_data(int(length))
+                        # print("IN CLIENT, THE LENGTH: ", length)
+                        msg = self._recv_data(int(length))
                         self.msg_q.put((self.server_ip, msg))
 
-    def recv_data(self, length):
+    def _recv_data(self, length):
         '''
         returns the data from the socket, gets in chunks of 1024
         :param length: int
