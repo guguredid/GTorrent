@@ -64,9 +64,14 @@ class Server:
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                         # send the client a list of the files in the server
                         self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
-                        client_files = client.recv(int(client.recv(6).decode())).decode()[2:]
-                        print(f"FILES THE CLIENT HAS: {client_files}")
-                        self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
+                        try:
+                            client_files = client.recv(int(client.recv(6).decode())).decode()[2:]
+                        except Exception as e:
+                            print(f"ERROR IN SERVER - {str(e)}")
+                            self.close_client(self._users[client])
+                        else:
+                            print(f"FILES THE CLIENT HAS: {client_files}")
+                            self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
 
                     else:
                         # receive data from existing client
@@ -246,9 +251,9 @@ class Server:
         #     if self.type == 'main':
         #         del self._used_ports[client_socket]
         #     client_socket.close()
-
-        print(f"{self._users[client_socket]} - disconnected")
-        del self._users[client_socket]
-        if self.type == 'main':
-            del self._used_ports[client_socket]
-        client_socket.close()
+        if client_socket in self._users.keys():
+            print(f"{self._users[client_socket]} - disconnected")
+            del self._users[client_socket]
+            if self.type == 'main':
+                del self._used_ports[client_socket]
+            client_socket.close()

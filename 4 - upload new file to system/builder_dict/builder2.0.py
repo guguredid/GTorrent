@@ -145,17 +145,14 @@ def handle_share(ip, id, q):
                 chunks_busy.append(current_chunk)
             elif len(chunks_busy) > 0:
                 current_chunk = chunks_busy[0]
-            # connect to the client - SHOULD BE HERE OR IN THE MAIN LOOP???
-            try:
-                msg = ClientProtocol.build_ask_part(tname, current_chunk)
-                client.send_msg(msg)
-            except TimeoutError as e:
-                print('TIMEOUT!')
-                break
-                # disconnect
-            except Exception as e:
-                print(f"[ERROR] in handle_share - {str(e)} id={id}")
-                break
+
+            msg = ClientProtocol.build_ask_part(tname, current_chunk)
+            client.send_msg(msg)
+            # print(4444444, client.is_running())
+            # if the client disconnect, stop the download
+        elif not client.is_running():
+            print("DOWNLOAD STOP! ERROR!")
+            break
         else:
             pass
     # client.send_msg(ClientProtocol.build_disconnect())
@@ -269,7 +266,6 @@ print("THE FILES I HAVE::: ", my_files)
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''
-finish_download = False
 
 # main loop
 while True:
@@ -324,9 +320,6 @@ while True:
                     # list of the threads building the file
                     thread_list = []
 
-                    # flag - so the monitored won't send the server until we finish downloading the file
-                    finish_download = False
-
                     # create the threads for getting the file's parts
                     for i in range(len(ip_list)):
                         thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
@@ -337,16 +330,21 @@ while True:
                     for thread in thread_list:
                         thread.join()
 
-                    finish_download = True
-
-                    # check the whole hash
-                    with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                        whole_data = file.read().rstrip()
-                    if encrypt(whole_data) == whole_hash:
-                        print('THE FILE IS OK!')
-                        server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
+                    # check if the download went ok - check the whole hash
+                    if os.path.exists(f'{FILES_ROOT}{tname}'):
+                        with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                            whole_data = file.read().rstrip()
+                        if encrypt(whole_data) == whole_hash:
+                            print('THE FILE IS OK!')
+                            server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
+                        else:
+                            print("There was an error while downloading the file...")
+                            os.remove(f'{FILES_ROOT}{tname}')
                     else:
-                        print('THE FILE IS NOT OK!')
+                        print("There was an error while downloading the file...")
+                    # else:
+                    #     print("There was an error while downloading the file...")
+                    #     os.remove(f'{FILES_ROOT}\\{tname}')
             else:
                 print('There is no such file in the server!')
         else:

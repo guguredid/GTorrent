@@ -45,6 +45,7 @@ class Client:
                 try:
                     length = self.my_socket.recv(6).decode()
                 except Exception as e:
+                    print(111111111)
                     self.disconnect()
                 else:
                     if length == '':
@@ -54,9 +55,11 @@ class Client:
                             # print("IN CLIENT, THE LENGTH: ", length)
                             msg = self._recv_data(int(length))
                         except Exception as e:
-                            print(f"ERROR IN CLIENT -  {str(e)}")
+                            print(f"ERROR IN CLIENT22222 -  {str(e)}")
+                            self.disconnect()
                         else:
                             self.msg_q.put((self.server_ip, msg))
+            print("MAIN LOOP STOPPED!!!")
 
     def _recv_data(self, length):
         '''
@@ -90,6 +93,7 @@ class Client:
         while True:
             if self.running:
                 msg = self._send_msg_q.get()
+                # print("MSG FOR SERVER! ", msg)
                 try:
                     self.my_socket.send(str(len(msg)).zfill(6).encode())
                     if type(msg) is bytes:
@@ -102,8 +106,23 @@ class Client:
                     break
                 else:
                     print("SENT TO SERVER:", msg)
+            # else:
+            #     print("STOP SEND MSG!")
+            #     break
+
+    def is_running(self):
+        '''
+        return if the client still running or not
+        :return: bool
+        '''
+        # print("IN RUNNING: ", self.running)
+        return self.running
 
     def disconnect(self):
+        '''
+        disconnects from the server
+        :return: None
+        '''
         print("=======================DISCONNCTED")
         self.running = False
         self.my_socket.close()
