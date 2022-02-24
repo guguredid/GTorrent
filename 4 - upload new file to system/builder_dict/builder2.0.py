@@ -241,7 +241,7 @@ TORRENT_SENDER_ADDRESS = "192.168.4.83"
 my_socket = socket.socket()
 file_socket = socket.socket()
 
-FILES_ROOT = 'C:\GTorrent\\'
+FILES_ROOT = 'D:\GTorrent\\'
 # create the files' folder if does not exist
 if not os.path.isdir(FILES_ROOT):
     os.mkdir(FILES_ROOT)

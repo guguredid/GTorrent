@@ -55,7 +55,7 @@ files_q = queue.Queue()
 server_by_ip = {}   # dict for all file uploading servers (ip : Server)
 
 # root to the torrents directory
-TORRENT_ROOT = 'C:\GTorrent\\'
+TORRENT_ROOT = 'D:\GTorrent\\'
 # TORRENT_ROOT = ''
 
 msg_q = queue.Queue()
