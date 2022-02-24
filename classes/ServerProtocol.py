@@ -2,6 +2,7 @@
 file for a class representing protocol handler for server
 '''
 import os
+import json
 
 
 class ServerProtocol:
@@ -114,12 +115,29 @@ class ServerProtocol:
         '''
         data = '!'.encode()
         if os.path.exists(f"{tname}.json"):
-            with open(f"{tname}.json", 'rb') as file:
-                data = file.read()
-            # check that there is at least one connected user that can share the file
-            someone_connected = [ip.encode() in data for ip in ip_list]
-            if True not in someone_connected:
-                data = '!'.encode()
+
+            with open(f"{tname}.json", 'r') as file:
+                data = json.load(file)
+            connected_ips = []
+            #
+            for ip in ip_list:
+                if ip in data["ip_list"]:
+                    connected_ips.append(ip)
+            print(f"CONNECTED IPS: {connected_ips}")
+            data["ip_list"] = ';'.join(connected_ips)
+            print(f"DATA: {data}")
+
+            data = json.dumps(data).encode()
+
+
+            # with open(f"{tname}.json", 'rb') as file:
+            #     data = file.read()
+            # # don't send the ips that are not connected
+            #
+            # # check that there is at least one connected user that can share the file
+            # someone_connected = [ip.encode() in data for ip in ip_list]
+            # if True not in someone_connected:
+            #     data = '!'.encode()
         return "07".encode() + data
 
     @staticmethod

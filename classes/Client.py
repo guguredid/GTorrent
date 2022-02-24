@@ -50,9 +50,13 @@ class Client:
                     if length == '':
                         self.disconnect()
                     else:
-                        # print("IN CLIENT, THE LENGTH: ", length)
-                        msg = self._recv_data(int(length))
-                        self.msg_q.put((self.server_ip, msg))
+                        try:
+                            # print("IN CLIENT, THE LENGTH: ", length)
+                            msg = self._recv_data(int(length))
+                        except Exception as e:
+                            print(f"ERROR IN CLIENT -  {str(e)}")
+                        else:
+                            self.msg_q.put((self.server_ip, msg))
 
     def _recv_data(self, length):
         '''
