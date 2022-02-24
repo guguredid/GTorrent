@@ -79,6 +79,15 @@ class ClientProtocol:
         return (data[:10].rstrip(), data[10:])
 
     @staticmethod
+    def build_send_finish_download(file_name):
+        '''
+        return a message for the server about finishing a download
+        :param file_name: str
+        :return: str
+        '''
+        return f"06{file_name.ljust(10)}"
+
+    @staticmethod
     def break_recv_new_file(data):
         '''
         return the name of the new file added to the system

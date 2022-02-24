@@ -88,6 +88,15 @@ class ServerProtocol:
         return f"05{name.ljust(10)}{status}"
 
     @staticmethod
+    def break_recv_finish(data):
+        '''
+        return the name of the file the client finished downloading
+        :param data: str
+        :return: str
+        '''
+        return data.rstrip()
+
+    @staticmethod
     def build_send_file(file_name):
         '''
         return a message for updating a client that a new file was added to the system

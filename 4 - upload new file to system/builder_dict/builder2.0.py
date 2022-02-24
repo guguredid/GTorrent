@@ -344,6 +344,7 @@ while True:
                         whole_data = file.read().rstrip()
                     if encrypt(whole_data) == whole_hash:
                         print('THE FILE IS OK!')
+                        server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
                     else:
                         print('THE FILE IS NOT OK!')
             else:

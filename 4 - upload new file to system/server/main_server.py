@@ -132,6 +132,25 @@ while True:
         file_name = ServerProtocol.break_recv_added_file(info.decode())
         print(f"FILE {file_name} WAS ADDED TO {ip}")
         # check if the file is in the system, if so update the relevant torrent file with the changes
+        # if f'{file_name}.json' in files_in_system:
+        #     with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
+        #         torrent = json.load(file)
+        #         if ip not in torrent["ip_list"]:
+        #             print(f"ADDING IP {ip} TO {file_name}")
+        #             torrent["ip_list"] += f";{ip}"
+        #     with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
+        #         json.dump(torrent, file)
+        # # if the file is not in the system, remove it
+        # else:
+        #     server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+        if f'{file_name}.json' not in files_in_system:
+            server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+
+    elif code == '06'.encode():
+        files_in_system = db.get_torrents()
+        file_name = ServerProtocol.break_recv_finish(info.decode())
+        print(f"FILE {file_name} WAS ADDED TO {ip} - HE FINISHED DOWNLOADING IT")
+        # check if the file is in the system, if so update the relevant torrent file with the changes
         if f'{file_name}.json' in files_in_system:
             with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
                 torrent = json.load(file)
@@ -140,9 +159,7 @@ while True:
                     torrent["ip_list"] += f";{ip}"
             with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                 json.dump(torrent, file)
-        # if the file is not in the system, remove it
-        else:
-            server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+
 
     # send torrent file
     elif code == '07'.encode():
