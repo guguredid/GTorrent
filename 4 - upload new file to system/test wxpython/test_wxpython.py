@@ -1,26 +1,21 @@
 import wx
 
-class MDIFrame(wx.MDIParentFrame):
-    def __init__(self):
-        wx.MDIParentFrame.__init__(self, None, -1, "MDI Parent", size=(600, 400))
-        menu = wx.Menu()
-        menu.Append(5000, "&New Window")
-        menu.Append(5001, "&Exit")
-        menubar = wx.MenuBar()
-        menubar.Append(menu, "&File")
-
-        self.SetMenuBar(menubar)
-        self.Bind(wx.EVT_MENU, self.OnNewWindow, id=5000)
-        self.Bind(wx.EVT_MENU, self.OnExit, id=5001)
-
-    def OnExit(self, evt):
-        self.Close(True)
-
-    def OnNewWindow(self, evt):
-        win = wx.MDIChildFrame(self, 1, "Child Window")
-        win.Show(True)
+class MyFrame(wx.Frame):
+    def __init__(self, parent=None):
+        super(MyFrame, self).__init__(parent, title="Example for SDI", size=(500,500))
+        # create status bar
+        self.CreateStatusBar(1)
+        self.SetStatusText("Developed by Merry Geva 1/1/2000")
+        # create main panel - to put on the others panels
+        main_panel = MainPanel(self)
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(main_panel, 1, wx.EXPAND)
+        # arrange the frame
+        self.SetSizer(box)
+        self.Layout()
+        self.Show()
 
 app = wx.App()
-frame = MDIFrame()
+frame = MyFrame()
 frame.Show()
 app.MainLoop()

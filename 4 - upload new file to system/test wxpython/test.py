@@ -33,7 +33,7 @@ class MyFrame(wx.Frame):
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main_panel, 1, wx.EXPAND)
-        # arrange the frame
+        # arrange the frame
         self.SetSizer(box)
         self.Layout()
         self.Show()
@@ -57,8 +57,9 @@ class MainPanel(wx.Panel):
 
 
 class FilesPanel(wx.Panel):
+# class FilesPanel(wx.Frame):
     def __init__(self, parent, frame):
-        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=(800,600), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=(800, 600), style=wx.SIMPLE_BORDER)
 
         self.frame = frame
         self.parent = parent
@@ -70,21 +71,22 @@ class FilesPanel(wx.Panel):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         # title
-        title = wx.StaticText(self, -1, label="Files Panel")
+        title = wx.StaticText(self, -1, "TESTING", (100, 50), (160, -1), wx.ALIGN_CENTER)
+        # title = wx.StaticText(self, -1, (100, 50), (160, -1), wx.ALIGN_CENTER, label="TEST")
         titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
         title.SetForegroundColour(wx.BLACK)
         title.SetFont(titlefont)
 
         # scrolled panel
-        self.scrollP = scrolled.ScrolledPanel(self, -1,style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER,size=(600,400))
+        self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER, size=(600, 400))
         self.scrollP.SetAutoLayout(1)
         self.scrollP.SetupScrolling()
         # words = "A Quick Brown Insane Fox Jumped Over the Fence and Ziplined to Cover".split()
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
 
-        text = wx.TextCtrl(self.scrollP, value="HELLO")
-        text.Bind(wx.EVT_BUTTON, self.file_selected)
-        self.spSizer.Add(text)
+        # text = wx.TextCtrl(self.scrollP, value="HELLO")
+        # text.Bind(wx.EVT_BUTTON, self.file_selected)
+        # self.spSizer.Add(text)
 
         # for word in words:
         #     text = wx.TextCtrl(self.scrollP, value=word)
@@ -93,26 +95,43 @@ class FilesPanel(wx.Panel):
         self.scrollP.SetSizer(self.spSizer)
 
         # load image button
-        upImage = wx.Image("upload.jpg")
-        upImage.Rescale(50, 50)
-        upImage = wx.Bitmap(upImage)
-        upBtn = wx.BitmapButton(self, name="upload file", size = (50, 50), bitmap = upImage)
-        upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
-        upBtn.SetToolTip("upload file")
-        upBtn.SetBackgroundColour('light grey')
+        # upImage = wx.Bitmap(wx.Image("upload.jpg").Rescale(100, 100))
+        # # upImage = wx.Bitmap(upImage)
+        # upBtn = wx.BitmapButton(self, name="upload file", size=(100, 100), bitmap=upImage)
+        # upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
+        # upBtn.SetToolTip("upload file")
+        # upBtn.SetBackgroundColour('light grey')
+
+        # create parent panel for button
+        self.pnl = wx.Panel(self)
+
+        # create wx.Bitmap object
+        bmp = wx.Bitmap('upload.jpg')
+
+        # create button at point (20, 20)
+        self.st = wx.Button(self.pnl, id=1, label="Button", pos=(100, 100),
+                            size=(100, 300), name="button")
+
+        # set bmp as bitmap for button
+        self.st.SetBitmap(bmp)
+
+        self.SetSize((350, 250))
+        # self.SetTitle('wx.Button')
+        self.Centre()
 
     def file_selected(self, event):
         print(event.GetWindow().GetValue())
 
     def uploadImage(self, event):
         print("in Upload")
-        openFileDialog = wx.FileDialog(self, "Open", "", "", "Python files (*.py)|*.py", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        openFileDialog = wx.FileDialog(self, "Open", "", "", "", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
         openFileDialog.Destroy()
 
         if path:
-            fileName = path[path.rfind("\\")+ 1 :]
+            print(f"RECEIVED PATH {path}")
+            fileName = path[path.rfind("\\")+1:]
             new_text = wx.TextCtrl(self.scrollP, value=fileName)
             self.spSizer.Add(new_text)
             self.scrollP.Layout()
@@ -137,7 +156,6 @@ class FilesPanel(wx.Panel):
 app = wx.App()
 
 frame = wx.Frame(None, -1, "test")
-# frame = MDIFrame()
 mainPanel = MainPanel(frame)
 frame.Show()
 app.MainLoop()
