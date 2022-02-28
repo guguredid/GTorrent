@@ -53,6 +53,8 @@ class Server:
                     print(f'{address[0]} - connected')
                     self._users[client] = address[0]
 
+                    print("TYPE=", self.type)
+
                     # check if the main server
                     if self.type == 'main':
                         # generate port for sending files' server for the client
@@ -74,16 +76,19 @@ class Server:
                             self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
 
                     else:
+                        print("FIRST CONNECTION!")
                         # receive data from existing client
                         data = ''
                         try:
                             length = client.recv(6).decode()
+                            print("AFTER LENGTH")
                             # check if there is problem/disconnect
                             if length == "":
                                 self._disconnect(client)
                             else:
-                                # print("PORTTTT", self.port)
+                                print("PORTTTT", self.port)
                                 data = self._recv_data(client, int(length))
+                                print("AFTER DATA")
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
                             self._disconnect(client)
@@ -93,7 +98,9 @@ class Server:
                                 self._disconnect(client)
                             # push the data we received to the queue
                             else:
+                                print("RECEIVE DATA ", data)
                                 self.msg_q.put((self._get_ip_by_socket(client), data))
+                                print("AFTER PUT!")
                 else:
                     print("HEREEEE")
                     # receive data from existing client

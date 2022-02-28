@@ -38,6 +38,8 @@ def handle_msg_q(q):
     while True:
         ip, curr_msg = q.get()
 
+        print(f"RECEIVE FROM {ip} MESSAGE {curr_msg}")
+
         code = curr_msg[:2].decode()
         info = curr_msg[2:]
 
@@ -92,8 +94,11 @@ def handle_msg_q(q):
 
         # asked to send file part
         elif code == '10':
+            print("SEND PART!")
             file_name, part = ClientProtocol.break_ask_part(info)
+            print("filename=",file_name)
             if file_name in my_files:
+                print("SENDING!")
                 server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
@@ -337,6 +342,7 @@ while True:
                         if encrypt(whole_data) == whole_hash:
                             print('THE FILE IS OK!')
                             server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
+                            my_files.append(tname)
                         else:
                             print("There was an error while downloading the file...")
                             os.remove(f'{FILES_ROOT}{tname}')

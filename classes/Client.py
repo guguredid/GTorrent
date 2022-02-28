@@ -4,6 +4,7 @@ file for a class representing a client in the system
 import socket
 import threading
 import queue
+import time
 
 
 class Client:
@@ -27,6 +28,7 @@ class Client:
         self.running = False
 
         threading.Thread(target=self._main_loop).start()
+        time.sleep(1)
         threading.Thread(target=self._send_msg).start()
 
     def _main_loop(self):
@@ -39,6 +41,7 @@ class Client:
             self.my_socket.connect((self.server_ip, self.server_port))
         except Exception as e:
             print(f"[ERROR] in main loop1 - {str(e)}")
+            self.disconnect()
         else:
             self.running = True
             while self.running:
@@ -105,7 +108,7 @@ class Client:
                     self.disconnect()
                     break
                 else:
-                    print("SENT TO SERVER:", msg)
+                    print(f"SENT TO SERVER: {self.server_ip}", msg)
             # else:
             #     print("STOP SEND MSG!")
             #     break
