@@ -46,7 +46,7 @@ class Client:
             self.running = True
             while self.running:
                 try:
-                    length = self.my_socket.recv(6).decode()
+                    length = self.my_socket.recv(10).decode()
                 except Exception as e:
                     print(111111111)
                     self.disconnect()
@@ -98,7 +98,7 @@ class Client:
                 msg = self._send_msg_q.get()
                 # print("MSG FOR SERVER! ", msg)
                 try:
-                    self.my_socket.send(str(len(msg)).zfill(6).encode())
+                    self.my_socket.send(str(len(msg)).zfill(10).encode())
                     if type(msg) is bytes:
                         self.my_socket.send(msg)
                     else:

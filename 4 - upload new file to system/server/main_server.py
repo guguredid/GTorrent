@@ -103,7 +103,6 @@ while True:
                     server.send_msg(ip, ServerProtocol.build_delete_file(f))
             # update existing torrent files if the files deleted from the client
 
-
     # receive file was deleted from the monitored folder
     elif code == '02'.encode():
         files_in_system = db.get_torrents()
@@ -131,21 +130,10 @@ while True:
         files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_added_file(info.decode())
         print(f"FILE {file_name} WAS ADDED TO {ip}")
-        # check if the file is in the system, if so update the relevant torrent file with the changes
-        # if f'{file_name}.json' in files_in_system:
-        #     with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
-        #         torrent = json.load(file)
-        #         if ip not in torrent["ip_list"]:
-        #             print(f"ADDING IP {ip} TO {file_name}")
-        #             torrent["ip_list"] += f";{ip}"
-        #     with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
-        #         json.dump(torrent, file)
-        # # if the file is not in the system, remove it
-        # else:
-        #     server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+        # if the file is not in the system, tell the client to delete it
         if f'{file_name}.json' not in files_in_system:
             server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
-
+    # receive a download was finished
     elif code == '06'.encode():
         files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_finish(info.decode())
@@ -160,14 +148,10 @@ while True:
             with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                 json.dump(torrent, file)
 
-
     # send torrent file
     elif code == '07'.encode():
 
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
-        # print(f"SENDING TORRENT FOR {tname}")
-        # msg = ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}")
-        # print(f"MESSAGE!!! {msg}")
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}", server.get_ip_list()))
 
     # create file upload server for the client

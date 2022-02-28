@@ -133,20 +133,15 @@ class ServerProtocol:
                 if ip in data["ip_list"]:
                     connected_ips.append(ip)
             print(f"CONNECTED IPS: {connected_ips}")
-            data["ip_list"] = ';'.join(connected_ips)
-            print(f"DATA: {data}")
+            # check if there are connected sharing people
+            if len(connected_ips) > 0:
+                data["ip_list"] = ';'.join(connected_ips)
+                print(f"DATA: {data}")
 
-            data = json.dumps(data).encode()
+                data = json.dumps(data).encode()
+            else:
+                data = '!'.encode()
 
-
-            # with open(f"{tname}.json", 'rb') as file:
-            #     data = file.read()
-            # # don't send the ips that are not connected
-            #
-            # # check that there is at least one connected user that can share the file
-            # someone_connected = [ip.encode() in data for ip in ip_list]
-            # if True not in someone_connected:
-            #     data = '!'.encode()
         return "07".encode() + data
 
     @staticmethod

@@ -94,11 +94,11 @@ def handle_msg_q(q):
 
         # asked to send file part
         elif code == '10':
-            print("SEND PART!")
+            # print("SEND PART!")
             file_name, part = ClientProtocol.break_ask_part(info)
-            print("filename=",file_name)
+            # print("filename=",file_name)
             if file_name in my_files:
-                print("SENDING!")
+                # print("SENDING!")
                 server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
@@ -106,15 +106,15 @@ def handle_msg_q(q):
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
                 # wait until can update the file
-                file_event.wait()
+                # file_event.wait()
                 # lock the thread to prevent other threads from using it
-                file_event.clear()
+                # file_event.clear()
                 # insert the chunk to the file
                 FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
                 # unlock the event for next thread
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
-                file_event.set()
+                # file_event.set()
             else:
                 print('THE HASH IS NOT OKAY!')
 
@@ -202,18 +202,8 @@ def monitor_dir():
             None
         )
 
-        #TODO: SEND THE SERVER WHEN FINISH DOWNLOADING A FILE BY CLOSING IT???
-
         # 1 : created file
-        #TODO: DO I NEED CREATE? IS IT OK TO LEAVE A EMPTY FILE, AND UPDATE THE SERVER ONLY WHEN THE SIZE IS CHANGING?
         if results[0][0] == 1:
-            # print(f' - Created file - {results[0][1]}')
-            # # if a different file then the one we're downloading is created - report it
-            # if tname != results[0][1]:
-            #     msg = ClientProtocol.build_add_file(results[0][1])
-
-
-
             print(f' - Created file - {results[0][1]}')
             msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
@@ -284,17 +274,19 @@ while True:
             only_name = upload_name.split('\\')[-1]
             not_ok = len(only_name) > 10
         print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
-        with open(upload_name, 'rb') as f:
-            data = f.read()
-        if file_server_client is not None:
-            file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+        if os.path.exists(upload_name):
+            with open(upload_name, 'rb') as f:
+                data = f.read()
+            if file_server_client is not None:
+                file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+        else:
+            print("Your file path is not valid...")
 
     elif action.lower() == 'd':
         if len(files_in_system) > 0:
             tdata = '~'
             print(f"The files currently available are: {', '.join(files_in_system)}")
             download_name = input('Enter the name of the file you want to download: ')
-            # msg = ClientProtocol.build_ask_torrent(download_name)
             server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
 
             # wait until receiving the torrent file
@@ -317,6 +309,8 @@ while True:
                     chunks_num = len(hash_list)
                     whole_hash = t.get_hash()
                     ip_list = t.get_ip_list()
+
+                    # check
 
                     # list of the chunks still needed
                     chunks_to_write = [i for i in range(1, chunks_num + 1)]

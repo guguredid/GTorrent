@@ -67,7 +67,7 @@ class Server:
                         # send the client a list of the files in the server
                         self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
                         try:
-                            client_files = client.recv(int(client.recv(6).decode())).decode()[2:]
+                            client_files = client.recv(int(client.recv(10).decode())).decode()[2:]
                         except Exception as e:
                             print(f"ERROR IN SERVER - {str(e)}")
                             self.close_client(self._users[client])
@@ -80,7 +80,7 @@ class Server:
                         # receive data from existing client
                         data = ''
                         try:
-                            length = client.recv(6).decode()
+                            length = client.recv(10).decode()
                             print("AFTER LENGTH")
                             # check if there is problem/disconnect
                             if length == "":
@@ -105,7 +105,7 @@ class Server:
                     print("HEREEEE")
                     # receive data from existing client
                     try:
-                        length = current_socket.recv(6).decode()
+                        length = current_socket.recv(10).decode()
                         # check if there is problem/disconnect
                         if length == "":
                             self._disconnect(current_socket)
@@ -186,7 +186,7 @@ class Server:
         soc = self._get_soc_by_ip(ip)
         if soc is not None:
             try:
-                soc.send(str(len(msg)).zfill(6).encode())
+                soc.send(str(len(msg)).zfill(10).encode())
                 if type(msg) == str:
                     msg = msg.encode()
                 soc.send(msg)
@@ -225,7 +225,7 @@ class Server:
         soc = self._get_soc_by_ip(ip)
         # print(1111111, soc, self._users[soc])
         try:
-            soc.send(str(len(msg)).zfill(6).encode())
+            soc.send(str(len(msg)).zfill(10).encode())
             soc.send(msg)
         except Exception as e:
             print(f'[ERROR] in send_part - {str(e)}')
