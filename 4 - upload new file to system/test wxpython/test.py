@@ -45,16 +45,12 @@ class MainPanel(wx.Panel):
         self.frame = parent
         self.SetBackgroundColour(wx.LIGHT_GREY)
         v_box = wx.BoxSizer()
-        # create object for each panel
-        # self.login = LoginPanel(self, self.frame)
-        # self.registration = RegistrationPanel(self, self.frame)
-        self.files = FilesPanel(self,self.frame)
 
-        # v_box.Add(self.login)
-        # v_box.Add(self.registration)
+        # create object for each panel
+        self.files = FilesPanel(self, self.frame)
+
         v_box.Add(self.files)
         # The first panel to show
-        # self.login.Show()
         self.files.Show()
         self.SetSizer(v_box)
         self.Layout()
@@ -62,7 +58,7 @@ class MainPanel(wx.Panel):
 
 class FilesPanel(wx.Panel):
     def __init__(self, parent, frame):
-        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=(500,500), style=wx.SIMPLE_BORDER)
+        wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=(800,600), style=wx.SIMPLE_BORDER)
 
         self.frame = frame
         self.parent = parent
@@ -80,15 +76,20 @@ class FilesPanel(wx.Panel):
         title.SetFont(titlefont)
 
         # scrolled panel
-        self.scrollP = scrolled.ScrolledPanel(self, -1,style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER,size=(500,300))
+        self.scrollP = scrolled.ScrolledPanel(self, -1,style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER,size=(600,400))
         self.scrollP.SetAutoLayout(1)
         self.scrollP.SetupScrolling()
-        words = "A Quick Brown Insane Fox Jumped Over the Fence and Ziplined to Cover".split()
+        # words = "A Quick Brown Insane Fox Jumped Over the Fence and Ziplined to Cover".split()
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
-        for word in words:
-            text = wx.TextCtrl(self.scrollP, value=word)
-            text.Bind(wx.EVT_CHILD_FOCUS, self.file_selected)
-            self.spSizer.Add(text)
+
+        text = wx.TextCtrl(self.scrollP, value="HELLO")
+        text.Bind(wx.EVT_BUTTON, self.file_selected)
+        self.spSizer.Add(text)
+
+        # for word in words:
+        #     text = wx.TextCtrl(self.scrollP, value=word)
+        #     text.Bind(wx.EVT_CHILD_FOCUS, self.file_selected)
+        #     self.spSizer.Add(text)
         self.scrollP.SetSizer(self.spSizer)
 
         # load image button
@@ -134,7 +135,9 @@ class FilesPanel(wx.Panel):
 
 
 app = wx.App()
+
+frame = wx.Frame(None, -1, "test")
 # frame = MDIFrame()
-# mainPanel = MainPanel(frame)
-# frame.Show()
-# app.MainLoop()
+mainPanel = MainPanel(frame)
+frame.Show()
+app.MainLoop()
