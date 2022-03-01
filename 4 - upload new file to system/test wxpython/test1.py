@@ -1,17 +1,23 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
+import string
 
 
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
-        super(MyFrame, self).__init__(parent, title="Example for SDI", size=(500, 500))
+        super(MyFrame, self).__init__(parent, title="GTorrent", size=(500, 500))
         # create status bar
-        self.CreateStatusBar(1)
-        self.SetStatusText("Developed by Merry Geva 1/1/2000")
+        # self.CreateStatusBar(1)
+        # self.SetStatusText("Developed by Merry Geva 1/1/2000")
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
         box.Add(main_panel, 1, wx.EXPAND)
+
+        # GTorrent icon
+        icon = wx.Icon("logo.png")
+        self.SetIcon(icon)
+
         # arrange the frame
         self.SetSizer(box)
         self.Layout()
@@ -25,8 +31,6 @@ class MainPanel(wx.Panel):
         self.SetBackgroundColour(wx.LIGHT_GREY)
         v_box = wx.BoxSizer()
         # create object for each panel
-        # self.login = LoginPanel(self, self.frame)
-        # self.registration = RegistrationPanel(self, self.frame)
         self.files = FilesPanel(self, self.frame)
 
         v_box.Add(self.files)
@@ -59,19 +63,33 @@ class FilesPanel(wx.Panel):
         self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER, size=(500, 300))
         self.scrollP.SetAutoLayout(1)
         self.scrollP.SetupScrolling()
-        words = "A Quick Brown Insane Fox Jumped Over the Fence and Ziplined to Cover".split()
+
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
-        for word in words:
-            text = wx.TextCtrl(self.scrollP, value=word)
-            text.Bind(wx.EVT_CHILD_FOCUS, self.file_selected)
-            self.spSizer.Add(text)
+
+        fileImg = wx.Bitmap("file.png")
+        # wx.StaticBitmap(self, -1, fileImg, (10, 5), (fileImg.getWidth(), fileImg.getHeight()))
+        # create button at point (20, 20)
+        self.st = wx.Button(self, id=1, label="Button", pos=(100, 100),
+                            size=(100, 30), name="button")
+        self.st.SetBitmap(fileImg)
+
+        files_list = ["pug.jpg", 'cat.jpg', "file1.png"]
+
+        # for word in words:
+        for file in files_list:
+            pass
+            # sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            # sub_sizer.Add(fileImg)
+            # text = wx.TextCtrl(self.scrollP, value=file)
+            # text.Bind(wx.EVT_BUTTON, self.file_selected)
+            # self.spSizer.Add(text)
         self.scrollP.SetSizer(self.spSizer)
 
         # load image button
         upImage = wx.Image("upload.png")
         upImage.Rescale(50, 50)
         upImage = wx.Bitmap(upImage)
-        upBtn = wx.BitmapButton(self, name="upload file", size = (50, 50), bitmap = upImage)
+        upBtn = wx.BitmapButton(self, name="upload file", size=(50, 50), bitmap=upImage, pos=(200, 200))
         upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
         upBtn.SetToolTip("upload file")
         upBtn.SetBackgroundColour('light grey')
@@ -108,5 +126,11 @@ class FilesPanel(wx.Panel):
     def file_selected(self, event):
         self.file_select = event.GetWindow().GetValue()
         self.element = event.GetWindow()
+
+
+app = wx.App()
+frame = MyFrame()
+frame.Show()
+app.MainLoop()
 
 
