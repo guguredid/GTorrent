@@ -1,7 +1,6 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
 import string
-from pubsub import pub
 
 
 class MyFrame(wx.Frame):
@@ -117,9 +116,6 @@ class FilesPanel(wx.Panel):
 
         self.SetSizer(sizer)
 
-        pub.subscribe(self.add_file, "add_file")
-        pub.subscribe(self.remove, "remove_file")
-
     def add_file(self, filename):
         '''
         adds file name to the scrolled bar
@@ -163,18 +159,12 @@ class FilesPanel(wx.Panel):
         self.scrollP.SetupScrolling()
         self.scrollP.Layout()
 
-    def remove_file(self, filename):
-        '''
-        removes the file from the scrolled panel
-        '''
-        print("IN REMOVE!")
 
     def file_selected(self, event):
         '''
         handles case where one of the files' buttons is selected
         '''
         print(event.GetEventObject().GetName())
-        wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
 
     def uploadImage(self, event):
         '''
@@ -188,7 +178,6 @@ class FilesPanel(wx.Panel):
         if path:
             fileName = path[path.rfind("\\")+1:]
             print(f"PATH-{path};;;;;NAME-{fileName}")
-            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{event.GetEventObject().GetName()}")
             self.add_file(fileName)
 
     def updateDir(self, event):
@@ -201,14 +190,12 @@ class FilesPanel(wx.Panel):
         path = openDirDialog.GetPath()
         openDirDialog.Destroy()
         if path:
-            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{event.GetEventObject().GetName()}")
             print(f"PATH-{path}")
 
 
-if __name__ == '__main__':
-    app = wx.App()
-    frame = MyFrame()
-    frame.Show()
-    app.MainLoop()
+app = wx.App()
+frame = MyFrame()
+frame.Show()
+app.MainLoop()
 
 
