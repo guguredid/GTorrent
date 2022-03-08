@@ -1,6 +1,7 @@
 import wx
 import wx.lib.scrolledpanel as scrolled
 import string
+from pubsub import pub
 
 
 class MyFrame(wx.Frame):
@@ -77,12 +78,12 @@ class FilesPanel(wx.Panel):
         # the sizer for the scrolled panel
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
 
-        files_list = ["pug.jpg", 'cat.jpg', "file1.png", "test", "a", "b", "c", "d", "ttttttttttttttttt"]
-
-        # add files to the available files' list
-        for file in files_list:
-
-            self.add_file(file)
+        # files_list = ["pug.jpg", 'cat.jpg', "file1.png", "test", "a", "b", "c", "d", "ttttttttttttttttt"]
+        #
+        # # add files to the available files' list
+        # for file in files_list:
+        #
+        #     self.add_file(file)
 
         # add the scrolled panel's sizer to the main sizer
         self.scrollP.SetSizer(self.spSizer)
@@ -115,6 +116,9 @@ class FilesPanel(wx.Panel):
         sizer.Add(bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
         self.SetSizer(sizer)
+
+        pub.subscribe(self.add_file, "add_file")
+        pub.subscribe(self.remove_file, "remove_file")
 
     def add_file(self, filename):
         '''
@@ -159,12 +163,18 @@ class FilesPanel(wx.Panel):
         self.scrollP.SetupScrolling()
         self.scrollP.Layout()
 
+    def remove_file(self, filename):
+        '''
+        removes the file from the scrolled panel
+        '''
+        print("IN REMOVE!")
 
     def file_selected(self, event):
         '''
         handles case where one of the files' buttons is selected
         '''
         print(event.GetEventObject().GetName())
+        wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
 
     def uploadImage(self, event):
         '''
@@ -177,8 +187,10 @@ class FilesPanel(wx.Panel):
         openFileDialog.Destroy()
         if path:
             fileName = path[path.rfind("\\")+1:]
+            #TODO: CHECK THE FILE NAME IS NO LONGER THEN 10!!!
             print(f"PATH-{path};;;;;NAME-{fileName}")
-            self.add_file(fileName)
+            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
+            # self.add_file(fileName)
 
     def updateDir(self, event):
         '''
@@ -190,12 +202,14 @@ class FilesPanel(wx.Panel):
         path = openDirDialog.GetPath()
         openDirDialog.Destroy()
         if path:
+            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
             print(f"PATH-{path}")
 
 
-app = wx.App()
-frame = MyFrame()
-frame.Show()
-app.MainLoop()
+if __name__ == '__main__':
+    app = wx.App()
+    frame = MyFrame()
+    frame.Show()
+    app.MainLoop()
 
 

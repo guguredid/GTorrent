@@ -14,7 +14,7 @@ def handle_ui_events(message):
     # asked to download a file
     if code == "1":
         print(f"ASKED TO DOWNLOAD FILE {info}")
-        wx.CallAfter(pub.sendMessage, "add_file", filename="TEST PUBSUB")
+        # wx.CallAfter(pub.sendMessage, "add_file", filename="TEST PUBSUB")
         pass
     # asked to upload a file
     elif code == "2":

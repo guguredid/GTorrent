@@ -78,12 +78,12 @@ class FilesPanel(wx.Panel):
         # the sizer for the scrolled panel
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
 
-        files_list = ["pug.jpg", 'cat.jpg', "file1.png", "test", "a", "b", "c", "d", "ttttttttttttttttt"]
-
-        # add files to the available files' list
-        for file in files_list:
-
-            self.add_file(file)
+        # files_list = ["pug.jpg", 'cat.jpg', "file1.png", "test", "a", "b", "c", "d", "ttttttttttttttttt"]
+        #
+        # # add files to the available files' list
+        # for file in files_list:
+        #
+        #     self.add_file(file)
 
         # add the scrolled panel's sizer to the main sizer
         self.scrollP.SetSizer(self.spSizer)
@@ -118,7 +118,7 @@ class FilesPanel(wx.Panel):
         self.SetSizer(sizer)
 
         pub.subscribe(self.add_file, "add_file")
-        pub.subscribe(self.remove, "remove_file")
+        pub.subscribe(self.remove_file, "remove_file")
 
     def add_file(self, filename):
         '''
@@ -188,7 +188,7 @@ class FilesPanel(wx.Panel):
         if path:
             fileName = path[path.rfind("\\")+1:]
             print(f"PATH-{path};;;;;NAME-{fileName}")
-            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{event.GetEventObject().GetName()}")
+            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
             self.add_file(fileName)
 
     def updateDir(self, event):
@@ -201,7 +201,7 @@ class FilesPanel(wx.Panel):
         path = openDirDialog.GetPath()
         openDirDialog.Destroy()
         if path:
-            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{event.GetEventObject().GetName()}")
+            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
             print(f"PATH-{path}")
 
 

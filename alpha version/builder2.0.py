@@ -67,7 +67,8 @@ def handle_msg_q(q):
             file_name, status = ClientProtocol.break_added_status(info)
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
-                print("FILE ADDED SUCCESSFULLY!")
+                print("FILE ADDED SUCCESSFULLY!-----------", f"{FILES_ROOT}{file_name}")
+                print(303030303030, upload_name)
                 shutil.copyfile(upload_name, f"{FILES_ROOT}{file_name}")
                 my_files.append(file_name)
             else:
@@ -77,6 +78,10 @@ def handle_msg_q(q):
         elif code == '06':
             file_name = ClientProtocol.break_recv_new_file(info.decode())
             print(f"NEW FILE ADDED TO THE SYSTEM: {file_name}")
+            # frame.main_panel.files.add_file(file_name)
+
+            wx.CallAfter(pub.sendMessage, "add_file", filename=file_name)
+
             if file_name not in files_in_system:
                 files_in_system.append(file_name)
 
@@ -229,26 +234,130 @@ def monitor_dir():
             server_client.send_msg(msg)
 
 
-def handle_ui_events(message, arg2=None):
+def handle_ui_events(message):
     '''
     handles the events that occurs on the graphic (clicks on buttons)
     :return: None
     '''
+    global upload_name
+
     code = message[0]
     info = message[1:]
+
+    print(f"FROM UI - {code}:{info}")
 
     # asked to download a file
     if code == "1":
         print(f"ASKED TO DOWNLOAD FILE {info}")
-        pass
+        download_file(info)
+        # pass
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
-        pass
+        upload_name = info
+        upload_file()
+        # pass
     # asked to change directory
     elif code == "3":
         print(f"ASKED TO CHANGE DIR TO {info}")
-        pass
+        # pass
+
+def download_file(download_name):
+    '''
+    handles the download of a file
+    '''
+    global tdata
+    # if len(files_in_system) > 0:
+    #     tdata = '~'
+    #     print(f"The files currently available are: {', '.join(files_in_system)}")
+    #     download_name = input('Enter the name of the file you want to download: ')
+    server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
+
+    # wait until receiving the torrent file
+    while tdata == '~':
+        print('waiting for torrent...')
+
+    if tdata == '!':
+        print("Downloading the file is not available at the moment...")
+
+    elif tdata != '':
+        print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
+        t = Torrent(tdata)
+        if not t.is_ok():
+            print("There was an error with the torrent file...")
+        else:
+            # data from the torrent file
+            tname = t.get_name().replace('.torrent', '')
+
+            hash_list = t.get_parts_hash()
+            chunks_num = len(hash_list)
+            whole_hash = t.get_hash()
+            ip_list = t.get_ip_list()
+
+            # check
+
+            # list of the chunks still needed
+            chunks_to_write = [i for i in range(1, chunks_num + 1)]
+            # list of the chunks being taken care of
+            chunks_busy = []
+            # list of the threads building the file
+            thread_list = []
+
+            # create the threads for getting the file's parts
+            for i in range(len(ip_list)):
+                thread_list.append(
+                    threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
+            # start all the threads and wait for all of them to finish
+            for thread in thread_list:
+                thread.start()
+            # wait for all the threads to finish
+            for thread in thread_list:
+                thread.join()
+
+            # check if the download went ok - check the whole hash
+            if os.path.exists(f'{FILES_ROOT}{tname}'):
+                with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                    whole_data = file.read().rstrip()
+                if encrypt(whole_data) == whole_hash:
+                    print('THE FILE IS OK!')
+                    server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
+                    my_files.append(tname)
+                else:
+                    print("There was an error while downloading the file...")
+                    os.remove(f'{FILES_ROOT}{tname}')
+            else:
+                print("There was an error while downloading the file...")
+            # else:
+            #     print("There was an error while downloading the file...")
+            #     os.remove(f'{FILES_ROOT}\\{tname}')
+    #     else:
+    #         print('There is no such file in the server!')
+    # else:
+    #     print("There are no available files currently...")
+    # pass
+
+def upload_file():
+    '''
+    handles the upload of a file
+    '''
+    global upload_name
+    # wait until received filename with len <= 10
+    # not_ok = True
+    # while not_ok:
+    #     # upload_name = input(
+    #     #     "enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
+    #     only_name = upload_name.split('\\')[-1]
+    #     not_ok = len(only_name) > 10
+    only_name = upload_name.split('\\')[-1]
+    print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
+    if os.path.exists(upload_name):
+        with open(upload_name, 'rb') as f:
+            data = f.read()
+        if file_server_client is not None:
+            file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+    else:
+        print("Your file path is not valid...")
+    # pass
 
 
 
@@ -288,100 +397,103 @@ server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''
 
+upload_name = ''
+thread_list = []
+
 app = wx.App()
 frame = MyFrame()
 frame.Show()
 app.MainLoop()
 
 # main loop
-while True:
-    action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one. Enter exit to leave the system: ')
+# while True:
+#     action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one. Enter exit to leave the system: ')
 
-    if action.lower() == 'u':
-        # wait until received filename with len <= 10
-        not_ok = True
-        while not_ok:
-            upload_name = input("enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
-            only_name = upload_name.split('\\')[-1]
-            not_ok = len(only_name) > 10
-        print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
-        if os.path.exists(upload_name):
-            with open(upload_name, 'rb') as f:
-                data = f.read()
-            if file_server_client is not None:
-                file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
-        else:
-            print("Your file path is not valid...")
+    # if action.lower() == 'u':
+        # # wait until received filename with len <= 10
+        # not_ok = True
+        # while not_ok:
+        #     upload_name = input("enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
+        #     only_name = upload_name.split('\\')[-1]
+        #     not_ok = len(only_name) > 10
+        # print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
+        # if os.path.exists(upload_name):
+        #     with open(upload_name, 'rb') as f:
+        #         data = f.read()
+        #     if file_server_client is not None:
+        #         file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+        # else:
+        #     print("Your file path is not valid...")
 
-    elif action.lower() == 'd':
-        if len(files_in_system) > 0:
-            tdata = '~'
-            print(f"The files currently available are: {', '.join(files_in_system)}")
-            download_name = input('Enter the name of the file you want to download: ')
-            server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
-
-            # wait until receiving the torrent file
-            while tdata == '~':
-                print('waiting for torrent...')
-
-            if tdata == '!':
-                print("Downloading the file is not available at the moment...")
-
-            elif tdata != '':
-                print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
-                t = Torrent(tdata)
-                if not t.is_ok():
-                    print("There was an error with the torrent file...")
-                else:
-                    # data from the torrent file
-                    tname = t.get_name().replace('.torrent', '')
-
-                    hash_list = t.get_parts_hash()
-                    chunks_num = len(hash_list)
-                    whole_hash = t.get_hash()
-                    ip_list = t.get_ip_list()
-
-                    # check
-
-                    # list of the chunks still needed
-                    chunks_to_write = [i for i in range(1, chunks_num + 1)]
-                    # list of the chunks being taken care of
-                    chunks_busy = []
-                    # list of the threads building the file
-                    thread_list = []
-
-                    # create the threads for getting the file's parts
-                    for i in range(len(ip_list)):
-                        thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
-                    # start all the threads and wait for all of them to finish
-                    for thread in thread_list:
-                        thread.start()
-                    # wait for all the threads to finish
-                    for thread in thread_list:
-                        thread.join()
-
-                    # check if the download went ok - check the whole hash
-                    if os.path.exists(f'{FILES_ROOT}{tname}'):
-                        with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-                            whole_data = file.read().rstrip()
-                        if encrypt(whole_data) == whole_hash:
-                            print('THE FILE IS OK!')
-                            server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
-                            my_files.append(tname)
-                        else:
-                            print("There was an error while downloading the file...")
-                            os.remove(f'{FILES_ROOT}{tname}')
-                    else:
-                        print("There was an error while downloading the file...")
-                    # else:
-                    #     print("There was an error while downloading the file...")
-                    #     os.remove(f'{FILES_ROOT}\\{tname}')
-            else:
-                print('There is no such file in the server!')
-        else:
-            print("There are no available files currently...")
-
-    elif action.lower() == 'exit':
-        break
+    # elif action.lower() == 'd':
+    #     if len(files_in_system) > 0:
+    #         tdata = '~'
+    #         print(f"The files currently available are: {', '.join(files_in_system)}")
+    #         download_name = input('Enter the name of the file you want to download: ')
+    #         server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
+    #
+    #         # wait until receiving the torrent file
+    #         while tdata == '~':
+    #             print('waiting for torrent...')
+    #
+    #         if tdata == '!':
+    #             print("Downloading the file is not available at the moment...")
+    #
+    #         elif tdata != '':
+    #             print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
+    #             t = Torrent(tdata)
+    #             if not t.is_ok():
+    #                 print("There was an error with the torrent file...")
+    #             else:
+    #                 # data from the torrent file
+    #                 tname = t.get_name().replace('.torrent', '')
+    #
+    #                 hash_list = t.get_parts_hash()
+    #                 chunks_num = len(hash_list)
+    #                 whole_hash = t.get_hash()
+    #                 ip_list = t.get_ip_list()
+    #
+    #                 # check
+    #
+    #                 # list of the chunks still needed
+    #                 chunks_to_write = [i for i in range(1, chunks_num + 1)]
+    #                 # list of the chunks being taken care of
+    #                 chunks_busy = []
+    #                 # list of the threads building the file
+    #                 thread_list = []
+    #
+    #                 # create the threads for getting the file's parts
+    #                 for i in range(len(ip_list)):
+    #                     thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
+    #                 # start all the threads and wait for all of them to finish
+    #                 for thread in thread_list:
+    #                     thread.start()
+    #                 # wait for all the threads to finish
+    #                 for thread in thread_list:
+    #                     thread.join()
+    #
+    #                 # check if the download went ok - check the whole hash
+    #                 if os.path.exists(f'{FILES_ROOT}{tname}'):
+    #                     with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+    #                         whole_data = file.read().rstrip()
+    #                     if encrypt(whole_data) == whole_hash:
+    #                         print('THE FILE IS OK!')
+    #                         server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
+    #                         my_files.append(tname)
+    #                     else:
+    #                         print("There was an error while downloading the file...")
+    #                         os.remove(f'{FILES_ROOT}{tname}')
+    #                 else:
+    #                     print("There was an error while downloading the file...")
+    #                 # else:
+    #                 #     print("There was an error while downloading the file...")
+    #                 #     os.remove(f'{FILES_ROOT}\\{tname}')
+    #         else:
+    #             print('There is no such file in the server!')
+    #     else:
+    #         print("There are no available files currently...")
+    #
+    # elif action.lower() == 'exit':
+    #     break
 
 print("GOODBYE! :)")
