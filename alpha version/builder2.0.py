@@ -40,6 +40,8 @@ def handle_msg_q(q):
     global file_server_client
     global files_in_system
     global tdata
+    global tname
+    global hash_list
 
     while True:
         ip, curr_msg = q.get()
@@ -54,6 +56,10 @@ def handle_msg_q(q):
             info = info.decode()
             files_in_system = ClientProtocol.break_files_in_system(info)
             files_in_system = [file.replace('.json', '') for file in files_in_system]
+
+            # add the files in the system to the ui
+            for file in files_in_system:
+                wx.CallAfter(pub.sendMessage, "add_file", filename=file)
 
         # delete a file from the monitored folder
         elif code == '02':
@@ -115,6 +121,7 @@ def handle_msg_q(q):
         # receive file part
         elif code == '11':
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
+            print(222222, file_name, current_chunk)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
                 # wait until can update the file
                 # file_event.wait()
@@ -152,7 +159,7 @@ def handle_share(ip, id, q):
     current_chunk = ''
     client = Client(2000, ip, q)
 
-    print(f"CONNECTING TO {ip}")
+    print(f"CONNECTING TO {ip} AND ASKING FOR FILE {tname}")
 
     while len(chunks_to_write) > 0 or len(chunks_busy) > 0:
         if current_chunk not in chunks_busy:
@@ -164,7 +171,6 @@ def handle_share(ip, id, q):
 
             msg = ClientProtocol.build_ask_part(tname, current_chunk)
             client.send_msg(msg)
-            # print(4444444, client.is_running())
             # if the client disconnect, stop the download
         elif not client.is_running():
             print("DOWNLOAD STOP! ERROR!")
@@ -181,7 +187,8 @@ def monitor_dir():
     monitors changes in the files directory, and reports them
     :return: None
     '''
-    global tname
+    # global tname
+
     hDir = win32file.CreateFile(
         FILES_ROOT,
         win32con.FILE_SHARE_READ,
@@ -221,12 +228,6 @@ def monitor_dir():
         elif results[0][0] == 2:
             print(f' - Deleted file - {results[0][1]}')
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
-        # 3: resize a file
-        # elif results[0][0] == 3:
-        #     print(f' - resize file - {results[0][1]}')
-        #     # if the download is over, that's when we send the server the message
-        #     if finish_download:
-        #         msg = ClientProtocol.build_add_file(results[0][1])
 
         # print the LOG
         if msg != '':
@@ -267,10 +268,12 @@ def download_file(download_name):
     handles the download of a file
     '''
     global tdata
-    # if len(files_in_system) > 0:
-    #     tdata = '~'
-    #     print(f"The files currently available are: {', '.join(files_in_system)}")
-    #     download_name = input('Enter the name of the file you want to download: ')
+    global tname
+    global chunks_to_write
+    global chunks_busy
+    global thread_list
+    global hash_list
+
     server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
 
     # wait until receiving the torrent file
@@ -295,6 +298,7 @@ def download_file(download_name):
             ip_list = t.get_ip_list()
 
             # check
+            print(1111111, tname, hash_list, chunks_num, ip_list)
 
             # list of the chunks still needed
             chunks_to_write = [i for i in range(1, chunks_num + 1)]
@@ -327,27 +331,14 @@ def download_file(download_name):
                     os.remove(f'{FILES_ROOT}{tname}')
             else:
                 print("There was an error while downloading the file...")
-            # else:
-            #     print("There was an error while downloading the file...")
-            #     os.remove(f'{FILES_ROOT}\\{tname}')
-    #     else:
-    #         print('There is no such file in the server!')
-    # else:
-    #     print("There are no available files currently...")
-    # pass
+
 
 def upload_file():
     '''
     handles the upload of a file
     '''
     global upload_name
-    # wait until received filename with len <= 10
-    # not_ok = True
-    # while not_ok:
-    #     # upload_name = input(
-    #     #     "enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
-    #     only_name = upload_name.split('\\')[-1]
-    #     not_ok = len(only_name) > 10
+
     only_name = upload_name.split('\\')[-1]
     print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
     if os.path.exists(upload_name):
@@ -357,7 +348,6 @@ def upload_file():
             file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
     else:
         print("Your file path is not valid...")
-    # pass
 
 
 
@@ -396,9 +386,14 @@ print("THE FILES I HAVE::: ", my_files)
 server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''
+tdata = '~'
+hash_list = []
 
 upload_name = ''
 thread_list = []
+
+chunks_to_write = []
+chunks_busy = []
 
 app = wx.App()
 frame = MyFrame()
