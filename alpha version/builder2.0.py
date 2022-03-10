@@ -326,6 +326,10 @@ def download_file(download_name):
                     print('THE FILE IS OK!')
                     server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
                     my_files.append(tname)
+
+                    # popup that the file was created
+                    wx.CallAfter(pub.sendMessage, "pop_up", message="THE FILE IS OK!")
+
                 else:
                     print("There was an error while downloading the file...")
                     os.remove(f'{FILES_ROOT}{tname}')

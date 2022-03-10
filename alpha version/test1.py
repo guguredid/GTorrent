@@ -119,6 +119,7 @@ class FilesPanel(wx.Panel):
 
         pub.subscribe(self.add_file, "add_file")
         pub.subscribe(self.remove_file, "remove_file")
+        pub.subscribe(self.popup, "pop_up")
 
     def add_file(self, filename):
         '''
@@ -168,6 +169,12 @@ class FilesPanel(wx.Panel):
         removes the file from the scrolled panel
         '''
         print("IN REMOVE!")
+
+    def popup(self, message):
+        '''
+        pops the given message to the screen
+        '''
+        wx.MessageBox(message, wx.OK)
 
     def file_selected(self, event):
         '''
