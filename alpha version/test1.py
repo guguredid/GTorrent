@@ -168,7 +168,7 @@ class FilesPanel(wx.Panel):
         '''
         removes the file from the scrolled panel
         '''
-        print("IN REMOVE!")
+        print("IN REMOVE! ", filename)
 
     def popup(self, message):
         '''

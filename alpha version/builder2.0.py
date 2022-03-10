@@ -59,6 +59,7 @@ def handle_msg_q(q):
 
             # add the files in the system to the ui
             for file in files_in_system:
+                # if file not in my_files:
                 wx.CallAfter(pub.sendMessage, "add_file", filename=file)
 
         # delete a file from the monitored folder
@@ -91,12 +92,12 @@ def handle_msg_q(q):
         elif code == '06':
             file_name = ClientProtocol.break_recv_new_file(info.decode())
             print(f"NEW FILE ADDED TO THE SYSTEM: {file_name}")
-            # frame.main_panel.files.add_file(file_name)
-
-            wx.CallAfter(pub.sendMessage, "add_file", filename=file_name)
 
             if file_name not in files_in_system:
                 files_in_system.append(file_name)
+
+            # if file_name not in my_files:
+            wx.CallAfter(pub.sendMessage, "add_file", filename=file_name)
 
         # receive torrent file
         elif code == '07':
@@ -115,6 +116,12 @@ def handle_msg_q(q):
             elif status == 0:
                 print(f"{ip} STOPPED SHARING THE FILE WE NEED!")
                 pass
+
+        # receive file was deleted from the server
+        elif code == '09':
+            file_name = ClientProtocol.break_file_deleted(info.decode())
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"{file_name} WAS DELETED FROM THE SYSTEM!")
+            wx.CallAfter(pub.sendMessage, "remove_file", filename=file_name)
 
         # asked to send file part
         elif code == '10':
@@ -234,6 +241,8 @@ def monitor_dir():
         # 2 : deleted file
         elif results[0][0] == 2:
             print(f' - Deleted file - {results[0][1]}')
+            if results[0][1] in my_files:
+                my_files.remove(results[0][1])
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
 
         # print the LOG
@@ -257,7 +266,10 @@ def handle_ui_events(message):
     # asked to download a file
     if code == "1":
         print(f"ASKED TO DOWNLOAD FILE {info}")
-        download_file(info)
+        if info not in my_files:
+            download_file(info)
+        else:
+            wx.CallAfter(pub.sendMessage, "pop_up", message="You already have the file!")
         # pass
     # asked to upload a file
     elif code == "2":
@@ -289,6 +301,7 @@ def download_file(download_name):
 
     if tdata == '!':
         print("Downloading the file is not available at the moment...")
+        wx.CallAfter(pub.sendMessage, "pop_up", message="Downloading the file is not available at the moment...")
 
     elif tdata != '':
         print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
@@ -296,7 +309,7 @@ def download_file(download_name):
         if not t.is_ok():
             print("There was an error with the torrent file...")
             # popup that there was a problem with the connection to the server
-            wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
+            wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error with the torrent file...")
         else:
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')

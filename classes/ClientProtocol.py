@@ -125,6 +125,15 @@ class ClientProtocol:
         return data[0], int(data[1:])
 
     @staticmethod
+    def break_file_deleted(data):
+        '''
+        return the name of the file deleted from the system
+        :param data: str
+        :return: tuple
+        '''
+        return data.rstrip()
+
+    @staticmethod
     def build_ask_part(file_name, part):
         '''
         return a message for asking a part for specific file from a sharer

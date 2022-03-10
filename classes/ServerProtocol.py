@@ -75,7 +75,8 @@ class ServerProtocol:
         :param file: str
         :return: str
         '''
-        pass
+        return f"09{file.ljust(10)}"
+        # pass
 
     @staticmethod
     def build_send_added_status(name, status):

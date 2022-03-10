@@ -116,7 +116,7 @@ while True:
                     print(f"REMOVING IP {ip} FROM {file_name}")
                     torrent["ip_list"] = torrent["ip_list"].replace(ip, '')
                     torrent["ip_list"] = torrent["ip_list"].strip(';')
-            # if there are no clients who can share the file, remove it from the system
+            # if there are no clients who can share the file, remove it from the system and let the connected users know
             if len(torrent["ip_list"]) > 0 and torrent["ip_list"] != ";":
                 with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                     json.dump(torrent, file)
@@ -124,6 +124,8 @@ while True:
                 print(f"REMOVING {file_name} FROM THE SYSTEM!")
                 os.remove(f'{TORRENT_ROOT}{file_name}.json')
                 db.delete_torrent(f'{file_name}.json')
+                server.send_all(ServerProtocol.build_file_deleted(file_name))
+
 
     # receive file was added to the monitored folder
     elif code == '03'.encode():
@@ -133,6 +135,7 @@ while True:
         # if the file is not in the system, tell the client to delete it
         if f'{file_name}.json' not in files_in_system:
             server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+
     # receive a download was finished
     elif code == '06'.encode():
         files_in_system = db.get_torrents()
@@ -150,7 +153,6 @@ while True:
 
     # send torrent file
     elif code == '07'.encode():
-
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}", server.get_ip_list()))
 
