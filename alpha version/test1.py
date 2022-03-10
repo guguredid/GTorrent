@@ -55,6 +55,9 @@ class FilesPanel(wx.Panel):
         # text font
         self.titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
 
+        # dictionary saving all the files' sizers in the scrolled panel
+        self.file_sizers = {}
+
         # main sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -77,13 +80,6 @@ class FilesPanel(wx.Panel):
 
         # the sizer for the scrolled panel
         self.spSizer = wx.BoxSizer(wx.VERTICAL)
-
-        # files_list = ["pug.jpg", 'cat.jpg', "file1.png", "test", "a", "b", "c", "d", "ttttttttttttttttt"]
-        #
-        # # add files to the available files' list
-        # for file in files_list:
-        #
-        #     self.add_file(file)
 
         # add the scrolled panel's sizer to the main sizer
         self.scrollP.SetSizer(self.spSizer)
@@ -157,6 +153,9 @@ class FilesPanel(wx.Panel):
         sub_sizer.AddSpacer(600 - (spaceFromLeft + spaceFromRight))
         sub_sizer.Add(downBtn, 0, wx.ALL, 0)
 
+        # save the file's sizer in the dictionary
+        self.file_sizers[filename] = sub_sizer
+
         # add the file's sizer to the scrolled panel's sizer
         self.spSizer.Add(sub_sizer)
 
@@ -169,6 +168,10 @@ class FilesPanel(wx.Panel):
         removes the file from the scrolled panel
         '''
         print("IN REMOVE! ", filename)
+
+        self.file_sizers[filename].Clear(True)
+
+        self.scrollP.Layout()
 
     def popup(self, message):
         '''

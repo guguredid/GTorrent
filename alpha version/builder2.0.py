@@ -80,13 +80,13 @@ def handle_msg_q(q):
                 my_files.append(file_name)
 
                 # popup that the upload succeeded
-                wx.CallAfter(pub.sendMessage, "pop_up", message="The upload has succeeded!")
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Uploading {file_name} has succeeded!")
 
             else:
                 # print("FILE WAS NOT ADDED")
 
                 # popup that the upload succeeded
-                wx.CallAfter(pub.sendMessage, "pop_up", message="The upload has failed...")
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Uploading {file_name} has failed...")
 
         # receive new file that was added to the system
         elif code == '06':
@@ -269,7 +269,7 @@ def handle_ui_events(message):
         if info not in my_files:
             download_file(info)
         else:
-            wx.CallAfter(pub.sendMessage, "pop_up", message="You already have the file!")
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {info}")
         # pass
     # asked to upload a file
     elif code == "2":
@@ -301,7 +301,7 @@ def download_file(download_name):
 
     if tdata == '!':
         print("Downloading the file is not available at the moment...")
-        wx.CallAfter(pub.sendMessage, "pop_up", message="Downloading the file is not available at the moment...")
+        wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {download_name} is not available at the moment...")
 
     elif tdata != '':
         print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
@@ -350,17 +350,17 @@ def download_file(download_name):
                     my_files.append(tname)
 
                     # popup that the file was created
-                    wx.CallAfter(pub.sendMessage, "pop_up", message="THE FILE IS OK!")
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!")
 
                 else:
                     # print("There was an error while downloading the file...")
                     os.remove(f'{FILES_ROOT}{tname}')
                     # popup that the download failed
-                    wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
             else:
                 # print("There was an error while downloading the file...")
                 # popup that the download failed
-                wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
+                wx.CallAfter(pub.sendMessage, "pop_up",message=f"There was an error while downloading {tname}...")
 
 
 def upload_file():
