@@ -174,7 +174,7 @@ class FilesPanel(wx.Panel):
         '''
         pops the given message to the screen
         '''
-        wx.MessageBox(message, wx.OK)
+        wx.MessageBox(message, " ", wx.OK)
 
     def file_selected(self, event):
         '''

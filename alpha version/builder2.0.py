@@ -73,12 +73,19 @@ def handle_msg_q(q):
             file_name, status = ClientProtocol.break_added_status(info)
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
-                print("FILE ADDED SUCCESSFULLY!-----------", f"{FILES_ROOT}{file_name}")
-                print(303030303030, upload_name)
+                # print("FILE ADDED SUCCESSFULLY!-----------", f"{FILES_ROOT}{file_name}")
+                # print(303030303030, upload_name)
                 shutil.copyfile(upload_name, f"{FILES_ROOT}{file_name}")
                 my_files.append(file_name)
+
+                # popup that the upload succeeded
+                wx.CallAfter(pub.sendMessage, "pop_up", message="The upload has succeeded!")
+
             else:
-                print("FILE WAS NOT ADDED")
+                # print("FILE WAS NOT ADDED")
+
+                # popup that the upload succeeded
+                wx.CallAfter(pub.sendMessage, "pop_up", message="The upload has failed...")
 
         # receive new file that was added to the system
         elif code == '06':
@@ -288,6 +295,8 @@ def download_file(download_name):
         t = Torrent(tdata)
         if not t.is_ok():
             print("There was an error with the torrent file...")
+            # popup that there was a problem with the connection to the server
+            wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
         else:
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')
@@ -331,10 +340,14 @@ def download_file(download_name):
                     wx.CallAfter(pub.sendMessage, "pop_up", message="THE FILE IS OK!")
 
                 else:
-                    print("There was an error while downloading the file...")
+                    # print("There was an error while downloading the file...")
                     os.remove(f'{FILES_ROOT}{tname}')
+                    # popup that the download failed
+                    wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
             else:
-                print("There was an error while downloading the file...")
+                # print("There was an error while downloading the file...")
+                # popup that the download failed
+                wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error while downloading the file...")
 
 
 def upload_file():
