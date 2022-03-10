@@ -274,7 +274,7 @@ def handle_ui_events(message):
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
-        upload_name = info
+        # check if trying to upload a file for the second time
         upload_file()
         # pass
     # asked to change directory
@@ -371,13 +371,17 @@ def upload_file():
 
     only_name = upload_name.split('\\')[-1]
     print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
-    if os.path.exists(upload_name):
-        with open(upload_name, 'rb') as f:
-            data = f.read()
-        if file_server_client is not None:
-            file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+    if only_name not in my_files:
+        if os.path.exists(upload_name):
+            with open(upload_name, 'rb') as f:
+                data = f.read()
+            if file_server_client is not None:
+                file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+        else:
+            print("Your file path is not valid...")
     else:
-        print("Your file path is not valid...")
+        # popup that already have the file
+        wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {only_name}...")
 
 
 
@@ -425,7 +429,7 @@ thread_list = []
 chunks_to_write = []
 chunks_busy = []
 
-app = wx.App()
+app = wx.App(False)
 frame = MyFrame()
 frame.Show()
 app.MainLoop()

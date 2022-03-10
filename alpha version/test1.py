@@ -24,6 +24,8 @@ class MyFrame(wx.Frame):
         self.Layout()
         self.Show()
 
+        self.Maximize(True)
+
 
 class MainPanel(wx.Panel):
     def __init__(self, parent):
