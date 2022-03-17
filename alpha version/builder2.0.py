@@ -42,6 +42,7 @@ def handle_msg_q(q):
     global tdata
     global tname
     global hash_list
+    global DOWNLOAD_TO_ROOT
 
     while True:
         ip, curr_msg = q.get()
@@ -142,7 +143,8 @@ def handle_msg_q(q):
                 # lock the thread to prevent other threads from using it
                 # file_event.clear()
                 # insert the chunk to the file
-                FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
+                # FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
+                FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}{tname}', chunk, current_chunk)
                 # unlock the event for next thread
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
@@ -257,6 +259,7 @@ def handle_ui_events(message):
     :return: None
     '''
     global upload_name
+    global DOWNLOAD_TO_ROOT
 
     code = message[0]
     info = message[1:]
@@ -280,7 +283,9 @@ def handle_ui_events(message):
     # asked to change directory
     elif code == "3":
         print(f"ASKED TO CHANGE DIR TO {info}")
+        DOWNLOAD_TO_ROOT = info
         # pass
+
 
 def download_file(download_name):
     '''
@@ -292,6 +297,7 @@ def download_file(download_name):
     global chunks_busy
     global thread_list
     global hash_list
+    global DOWNLOAD_TO_ROOT
 
     server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
 
@@ -341,8 +347,10 @@ def download_file(download_name):
                 thread.join()
 
             # check if the download went ok - check the whole hash
-            if os.path.exists(f'{FILES_ROOT}{tname}'):
-                with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+            # if os.path.exists(f'{FILES_ROOT}{tname}'):
+            if os.path.exists(f'{DOWNLOAD_TO_ROOT}{tname}'):
+                # with open(f'{FILES_ROOT}{tname}', 'rb') as file:
+                with open(f'{DOWNLOAD_TO_ROOT}{tname}', 'rb') as file:
                     whole_data = file.read().rstrip()
                 if encrypt(whole_data) == whole_hash:
                     print('THE FILE IS OK!')
@@ -354,7 +362,8 @@ def download_file(download_name):
 
                 else:
                     # print("There was an error while downloading the file...")
-                    os.remove(f'{FILES_ROOT}{tname}')
+                    # os.remove(f'{FILES_ROOT}{tname}')
+                    os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
             else:
@@ -384,22 +393,19 @@ def upload_file():
         wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {only_name}...")
 
 
-
 pub.subscribe(handle_ui_events, "panel_listener")
-# pub.subscribe(handle_ui_events, "panel_listener")
-
 
 my_socket = socket.socket()
 file_socket = socket.socket()
 
 # FILES_ROOT = 'D:\GTorrent\\'
-# create the files' folder if does not exist
+# create the monitored files' folder if does not exist
 if not os.path.isdir(FILES_ROOT):
     os.mkdir(FILES_ROOT)
 
-# event object
-file_event = threading.Event()
-file_event.set()
+# # event object
+# file_event = threading.Event()
+# file_event.set()
 # queue for messages from all connections
 msg_q = queue.Queue()
 
@@ -410,6 +416,9 @@ threading.Thread(target=monitor_dir, daemon=True).start()
 server = Server(2000, msg_q, 'files_server')
 # connecting to the server, receiving port for the file socket, receive list of files in the system, send files from the monitored folder
 server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
+
+# the root we download the files to
+DOWNLOAD_TO_ROOT = 'C:\\'
 
 file_server_client = None
 

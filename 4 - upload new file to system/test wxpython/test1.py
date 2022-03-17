@@ -65,7 +65,7 @@ class FilesPanel(wx.Panel):
         # text
         text = wx.StaticText(self, -1, label="Files in the system: ")
         text.SetFont(self.titlefont)
-        sizer.AddSpacer(10)
+        # sizer.AddSpacer(10)
 
         sizer.Add(logoImg, 0, wx.ALIGN_CENTER | wx.ALL, 0)
         sizer.Add(text, 0, wx.ALIGN_CENTER | wx.ALL, 0)

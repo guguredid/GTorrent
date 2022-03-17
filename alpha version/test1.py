@@ -45,7 +45,7 @@ class MainPanel(wx.Panel):
 
 
 class FilesPanel(wx.Panel):
-    def __init__(self, parent, frame):
+    def __init__(self, parent, frame, download='C\\'):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -54,6 +54,8 @@ class FilesPanel(wx.Panel):
         self.Hide()
         self.SetBackgroundColour(wx.LIGHT_GREY)
 
+        self.download_root = download
+
         # text font
         self.titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
 
@@ -61,7 +63,7 @@ class FilesPanel(wx.Panel):
         self.file_sizers = {}
 
         # main sizer
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
 
         # GTorrent logo at the top
         logoImg = wx.Image("Full logo.png", wx.BITMAP_TYPE_ANY).Rescale(600, 300)
@@ -70,10 +72,10 @@ class FilesPanel(wx.Panel):
         # text
         text = wx.StaticText(self, -1, label="Files in the system: ")
         text.SetFont(self.titlefont)
-        sizer.AddSpacer(10)
+        self.sizer.AddSpacer(10)
 
-        sizer.Add(logoImg, 0, wx.ALIGN_CENTER | wx.ALL, 0)
-        sizer.Add(text, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+        self.sizer.Add(logoImg, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+        self.sizer.Add(text, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
         # scrolled panel
         self.scrollP = scrolled.ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL | wx.SUNKEN_BORDER, size=(600, 300))
@@ -87,12 +89,12 @@ class FilesPanel(wx.Panel):
         self.scrollP.SetSizer(self.spSizer)
         self.scrollP.SetupScrolling()
 
-        sizer.Add(self.scrollP, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+        self.sizer.Add(self.scrollP, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
-        sizer.AddSpacer(10)
+        self.sizer.AddSpacer(10)
 
         # the bottom buttons' sizer
-        bottom_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.bottom_buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # load image button
         upImage = wx.Image("upload.png")
@@ -102,18 +104,22 @@ class FilesPanel(wx.Panel):
         upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
         # upBtn.SetToolTip("upload file")
 
-        # change GTorrent's directory button
+        # change the directory to download to button
         changeDirBtn = wx.Button(self, id=1, label="Change Directory", size=(100, 75), name="changeDir")
         changeDirBtn.Bind(wx.EVT_BUTTON, self.updateDir)
+        current_download_text = wx.StaticText(self, -1, label=f"Current download directory {self.download_root}: ")
+        current_download_text.SetFont(self.titlefont)
 
         # update the sizers
-        bottom_buttons_sizer.Add(upBtn)
-        bottom_buttons_sizer.AddSpacer(30)
-        bottom_buttons_sizer.Add(changeDirBtn)
+        self.bottom_buttons_sizer.Add(upBtn)
+        self.bottom_buttons_sizer.AddSpacer(30)
+        self.bottom_buttons_sizer.Add(changeDirBtn)
+        self.bottom_buttons_sizer.AddSpacer(15)
+        self.bottom_buttons_sizer.Add(current_download_text)
 
-        sizer.Add(bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+        self.sizer.Add(self.bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
-        self.SetSizer(sizer)
+        self.SetSizer(self.sizer)
 
         pub.subscribe(self.add_file, "add_file")
         pub.subscribe(self.remove_file, "remove_file")
@@ -216,6 +222,13 @@ class FilesPanel(wx.Panel):
         if path:
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
             print(f"PATH-{path}")
+            self.download_root = path
+            current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
+            current_download_text.SetFont(self.titlefont)
+            self.bottom_buttons_sizer.Remove(4)
+            self.bottom_buttons_sizer.Add(current_download_text)
+            self.bottom_buttons_sizer.Layout()
+            self.Sizer.Layout()
 
 
 if __name__ == '__main__':
