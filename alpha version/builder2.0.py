@@ -357,6 +357,9 @@ def download_file(download_name):
                     server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
                     my_files.append(tname)
 
+                    # copy the file to the monitored folder
+                    shutil.copyfile(f'{DOWNLOAD_TO_ROOT}{tname}', f"{FILES_ROOT}{tname}")
+
                     # popup that the file was created
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!")
 
