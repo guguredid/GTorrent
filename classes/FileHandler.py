@@ -48,6 +48,7 @@ class FileHandler:
         :param num: int
         :return: None
         '''
+        print("THE PATH:", path)
         # check if the file exist first
         if not os.path.isfile(path):
             with open(path, 'wb') as f:

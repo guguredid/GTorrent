@@ -144,7 +144,7 @@ def handle_msg_q(q):
                 # file_event.clear()
                 # insert the chunk to the file
                 # FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
-                FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}{tname}', chunk, current_chunk)
+                FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}\\{tname}', chunk, current_chunk)
                 # unlock the event for next thread
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
