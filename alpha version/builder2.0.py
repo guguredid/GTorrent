@@ -151,6 +151,7 @@ def handle_msg_q(q):
                 # file_event.set()
             else:
                 print('THE HASH IS NOT OKAY!')
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {file_name} is not available at the moment...")
 
         # client disconnect from the sharing server
         elif code == '12':
@@ -260,6 +261,7 @@ def handle_ui_events(message):
     '''
     global upload_name
     global DOWNLOAD_TO_ROOT
+    global FILES_ROOT
 
     code = message[0]
     info = message[1:]
@@ -272,7 +274,10 @@ def handle_ui_events(message):
         if info not in my_files:
             download_file(info)
         else:
-            wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {info}")
+            # if already have the file, copy it the the download root
+            # wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {info}")
+            # copy the file to the monitored folder
+            shutil.copyfile(f"{FILES_ROOT}{tname}", f'{DOWNLOAD_TO_ROOT}{tname}')
         # pass
     # asked to upload a file
     elif code == "2":
