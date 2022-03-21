@@ -45,7 +45,7 @@ class MainPanel(wx.Panel):
 
 
 class FilesPanel(wx.Panel):
-    def __init__(self, parent, frame, download='C\\'):
+    def __init__(self, parent, frame, download='D\\'):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent

@@ -3,7 +3,7 @@ from classes.Torrent import Torrent
 from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
 from classes.Server import Server
-from test1 import MyFrame
+from Graphics import MyFrame
 from generalSetting import FILES_ROOT
 from generalSetting import TORRENT_SENDER_ADDRESS
 import socket
