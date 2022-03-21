@@ -74,8 +74,6 @@ def handle_msg_q(q):
             file_name, status = ClientProtocol.break_added_status(info)
             # if the file is added to the system, write it to the monitored folder
             if status == '1':
-                # print("FILE ADDED SUCCESSFULLY!-----------", f"{FILES_ROOT}{file_name}")
-                # print(303030303030, upload_name)
                 shutil.copyfile(upload_name, f"{FILES_ROOT}{file_name}")
                 my_files.append(file_name)
 
@@ -246,6 +244,7 @@ def handle_ui_events(message):
     global upload_name
     global DOWNLOAD_TO_ROOT
     global FILES_ROOT
+    global is_downloading
 
     code = message[0]
     info = message[1:]
@@ -255,14 +254,17 @@ def handle_ui_events(message):
     # asked to download a file
     if code == "1":
         print(f"ASKED TO DOWNLOAD FILE {info}")
-        if info not in my_files:
-            download_file(info)
+        if not is_downloading:
+            if info not in my_files:
+                download_file(info)
+            else:
+                # if already have the file, copy it to the monitored folder
+                print("ALREAADY HAVE FILE, COPYING IT")
+                print(f"{FILES_ROOT}{info}")
+                print(f'{DOWNLOAD_TO_ROOT}{info}')
+                shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
         else:
-            # if already have the file, copy it to the monitored folder
-            print("ALREAADY HAVE FILE, COPYING IT")
-            print(f"{FILES_ROOT}{info}")
-            print(f'{DOWNLOAD_TO_ROOT}{info}')
-            shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"Another download is occurring at the moment...")
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
@@ -285,6 +287,10 @@ def download_file(download_name):
     global thread_list
     global hash_list
     global DOWNLOAD_TO_ROOT
+    global is_downloading
+
+    # change the flag - to stop downloading other files
+    is_downloading = True
 
     server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
 
@@ -354,7 +360,9 @@ def download_file(download_name):
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
             else:
                 # popup that the download failed
-                wx.CallAfter(pub.sendMessage, "pop_up",message=f"There was an error while downloading {tname}...")
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
+    # change the flag - to enable downloading other files
+    is_downloading = False
 
 
 def upload_file():
@@ -409,6 +417,9 @@ server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
 
 # the root we download the files to
 DOWNLOAD_TO_ROOT = 'D:\\'
+
+# flag - do we download something or not
+is_downloading = False
 
 file_server_client = None
 
