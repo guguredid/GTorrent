@@ -75,7 +75,6 @@ if TORRENT_ROOT != '' and not os.path.exists(TORRENT_ROOT):
 while True:
     # receive the message from the server
     ip, data = msg_q.get()
-    # print(f"RECEIVED {data} FROM {ip}")
     code = data[:2]
     info = data[2:]
 
@@ -98,6 +97,19 @@ while True:
                 if f"{f}.json" not in files_in_system:
                     print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
                     server.send_msg(ip, ServerProtocol.build_delete_file(f))
+            # update existing torrent files if the file is deleted from the client
+            for f in files_in_system:
+                with open(f'{TORRENT_ROOT}\\{f}.json', 'r') as tFile:
+                    torrent_data = tFile.read()
+                if ip in torrent_data and f not in client_files:
+                    torrent_data = torrent_data.replace(ip, '')
+                    torrent_data = torrent_data.strip(';')
+                #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
+                if len(torrent_data.split('ip_list')[1]) == 0:
+                    print(f"REMOVING {file_name} FROM THE SYSTEM!")
+                    os.remove(f'{TORRENT_ROOT}{file_name}.json')
+                    db.delete_torrent(f'{file_name}.json')
+                    server.send_all(ServerProtocol.build_file_deleted(file_name))
             # TODO:update existing torrent files if the files deleted from the client
 
     # receive file was deleted from the monitored folder
