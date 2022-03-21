@@ -19,7 +19,6 @@ import wx
 from pubsub import pub
 
 
-
 def encrypt(data):
     '''
     get data, return its hash
@@ -82,10 +81,7 @@ def handle_msg_q(q):
 
                 # popup that the upload succeeded
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"Uploading {file_name} has succeeded!")
-
             else:
-                # print("FILE WAS NOT ADDED")
-
                 # popup that the upload succeeded
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"Uploading {file_name} has failed...")
 
@@ -97,7 +93,6 @@ def handle_msg_q(q):
             if file_name not in files_in_system:
                 files_in_system.append(file_name)
 
-            # if file_name not in my_files:
             wx.CallAfter(pub.sendMessage, "add_file", filename=file_name)
 
         # receive torrent file
@@ -116,7 +111,6 @@ def handle_msg_q(q):
                 thread_list[-1].join()
             elif status == 0:
                 print(f"{ip} STOPPED SHARING THE FILE WE NEED!")
-                pass
 
         # receive file was deleted from the server
         elif code == '09':
@@ -126,11 +120,8 @@ def handle_msg_q(q):
 
         # asked to send file part
         elif code == '10':
-            # print("SEND PART!")
             file_name, part = ClientProtocol.break_ask_part(info)
-            # print("filename=",file_name)
             if file_name in my_files:
-                # print("SENDING!")
                 server.send_part(ip, ClientProtocol.build_send_part(file_name, part, FileHandler.get_part(f'{FILES_ROOT}{file_name}', part)))
 
         # receive file part
@@ -138,17 +129,13 @@ def handle_msg_q(q):
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
             print(222222, file_name, current_chunk)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
-                # wait until can update the file
-                # file_event.wait()
-                # lock the thread to prevent other threads from using it
-                # file_event.clear()
+
                 # insert the chunk to the file
-                # FileHandler.insert_part(f'{FILES_ROOT}{tname}', chunk, current_chunk)
-                FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}\\{tname}', chunk, current_chunk)
-                # unlock the event for next thread
+                # FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}\\{tname}', chunk, current_chunk)
+                FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}{tname}', chunk, current_chunk)
+
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
-                # file_event.set()
             else:
                 print('THE HASH IS NOT OKAY!')
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {file_name} is not available at the moment...")
@@ -194,7 +181,6 @@ def handle_share(ip, id, q):
             break
         else:
             pass
-    # client.send_msg(ClientProtocol.build_disconnect())
     client.disconnect()
     print(f"THREAD {id} FINISHED!")
 
@@ -204,7 +190,6 @@ def monitor_dir():
     monitors changes in the files directory, and reports them
     :return: None
     '''
-    # global tname
 
     hDir = win32file.CreateFile(
         FILES_ROOT,
@@ -218,7 +203,6 @@ def monitor_dir():
 
     # monitor the directory
     while True:
-
         msg = ''
 
         results = win32file.ReadDirectoryChangesW(
@@ -274,26 +258,20 @@ def handle_ui_events(message):
         if info not in my_files:
             download_file(info)
         else:
-            # if already have the file, copy it the the download root
-            # wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {info}")
-            # copy the file to the monitored folder
+            # if already have the file, copy it to the monitored folder
             print("ALREAADY HAVE FILE, COPYING IT")
             print(f"{FILES_ROOT}{info}")
             print(f'{DOWNLOAD_TO_ROOT}{info}')
             shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
-        # pass
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
         upload_name = info
-        # check if trying to upload a file for the second time
         upload_file()
-        # pass
     # asked to change directory
     elif code == "3":
         print(f"ASKED TO CHANGE DIR TO {info}")
         DOWNLOAD_TO_ROOT = f"{info}\\"
-        # pass
 
 
 def download_file(download_name):
@@ -356,9 +334,7 @@ def download_file(download_name):
                 thread.join()
 
             # check if the download went ok - check the whole hash
-            # if os.path.exists(f'{FILES_ROOT}{tname}'):
             if os.path.exists(f'{DOWNLOAD_TO_ROOT}{tname}'):
-                # with open(f'{FILES_ROOT}{tname}', 'rb') as file:
                 with open(f'{DOWNLOAD_TO_ROOT}{tname}', 'rb') as file:
                     whole_data = file.read().rstrip()
                 if encrypt(whole_data) == whole_hash:
@@ -373,13 +349,10 @@ def download_file(download_name):
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!")
 
                 else:
-                    # print("There was an error while downloading the file...")
-                    # os.remove(f'{FILES_ROOT}{tname}')
                     os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
             else:
-                # print("There was an error while downloading the file...")
                 # popup that the download failed
                 wx.CallAfter(pub.sendMessage, "pop_up",message=f"There was an error while downloading {tname}...")
 
@@ -419,14 +392,10 @@ pub.subscribe(handle_ui_events, "panel_listener")
 my_socket = socket.socket()
 file_socket = socket.socket()
 
-# FILES_ROOT = 'D:\GTorrent\\'
 # create the monitored files' folder if does not exist
 if not os.path.isdir(FILES_ROOT):
     os.mkdir(FILES_ROOT)
 
-# # event object
-# file_event = threading.Event()
-# file_event.set()
 # queue for messages from all connections
 msg_q = queue.Queue()
 
@@ -463,96 +432,5 @@ app = wx.App(False)
 frame = MyFrame()
 frame.Show()
 app.MainLoop()
-
-# main loop
-# while True:
-#     action = input('Enter what you want to do: enter U for uploading a file, or D for downloading one. Enter exit to leave the system: ')
-
-    # if action.lower() == 'u':
-        # # wait until received filename with len <= 10
-        # not_ok = True
-        # while not_ok:
-        #     upload_name = input("enter the name of the file you want, please enter a file with name 10 characters long, or less: ")
-        #     only_name = upload_name.split('\\')[-1]
-        #     not_ok = len(only_name) > 10
-        # print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
-        # if os.path.exists(upload_name):
-        #     with open(upload_name, 'rb') as f:
-        #         data = f.read()
-        #     if file_server_client is not None:
-        #         file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
-        # else:
-        #     print("Your file path is not valid...")
-
-    # elif action.lower() == 'd':
-    #     if len(files_in_system) > 0:
-    #         tdata = '~'
-    #         print(f"The files currently available are: {', '.join(files_in_system)}")
-    #         download_name = input('Enter the name of the file you want to download: ')
-    #         server_client.send_msg(ClientProtocol.build_ask_torrent(download_name))
-    #
-    #         # wait until receiving the torrent file
-    #         while tdata == '~':
-    #             print('waiting for torrent...')
-    #
-    #         if tdata == '!':
-    #             print("Downloading the file is not available at the moment...")
-    #
-    #         elif tdata != '':
-    #             print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
-    #             t = Torrent(tdata)
-    #             if not t.is_ok():
-    #                 print("There was an error with the torrent file...")
-    #             else:
-    #                 # data from the torrent file
-    #                 tname = t.get_name().replace('.torrent', '')
-    #
-    #                 hash_list = t.get_parts_hash()
-    #                 chunks_num = len(hash_list)
-    #                 whole_hash = t.get_hash()
-    #                 ip_list = t.get_ip_list()
-    #
-    #                 # check
-    #
-    #                 # list of the chunks still needed
-    #                 chunks_to_write = [i for i in range(1, chunks_num + 1)]
-    #                 # list of the chunks being taken care of
-    #                 chunks_busy = []
-    #                 # list of the threads building the file
-    #                 thread_list = []
-    #
-    #                 # create the threads for getting the file's parts
-    #                 for i in range(len(ip_list)):
-    #                     thread_list.append(threading.Thread(target=handle_share, args=(ip_list[i], i + 1, msg_q,), daemon=True))
-    #                 # start all the threads and wait for all of them to finish
-    #                 for thread in thread_list:
-    #                     thread.start()
-    #                 # wait for all the threads to finish
-    #                 for thread in thread_list:
-    #                     thread.join()
-    #
-    #                 # check if the download went ok - check the whole hash
-    #                 if os.path.exists(f'{FILES_ROOT}{tname}'):
-    #                     with open(f'{FILES_ROOT}{tname}', 'rb') as file:
-    #                         whole_data = file.read().rstrip()
-    #                     if encrypt(whole_data) == whole_hash:
-    #                         print('THE FILE IS OK!')
-    #                         server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
-    #                         my_files.append(tname)
-    #                     else:
-    #                         print("There was an error while downloading the file...")
-    #                         os.remove(f'{FILES_ROOT}{tname}')
-    #                 else:
-    #                     print("There was an error while downloading the file...")
-    #                 # else:
-    #                 #     print("There was an error while downloading the file...")
-    #                 #     os.remove(f'{FILES_ROOT}\\{tname}')
-    #         else:
-    #             print('There is no such file in the server!')
-    #     else:
-    #         print("There are no available files currently...")
-    #
-    # elif action.lower() == 'exit':
-    #     break
 
 print("GOODBYE! :)")

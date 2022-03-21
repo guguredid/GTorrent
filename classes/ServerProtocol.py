@@ -65,7 +65,6 @@ class ServerProtocol:
         '''
         file_name = data[:10].decode().rstrip()
         data = data[10:]
-        # print(111111, len(data))
         return file_name, data
 
     @staticmethod
@@ -76,7 +75,6 @@ class ServerProtocol:
         :return: str
         '''
         return f"09{file.ljust(10)}"
-        # pass
 
     @staticmethod
     def build_send_added_status(name, status):

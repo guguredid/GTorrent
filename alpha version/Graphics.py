@@ -7,9 +7,6 @@ from pubsub import pub
 class MyFrame(wx.Frame):
     def __init__(self, parent=None):
         super(MyFrame, self).__init__(parent, title="GTorrent", size=wx.DisplaySize())
-        # create status bar
-        # self.CreateStatusBar(1)
-        # self.SetStatusText("Developed by Merry Geva 1/1/2000")
         # create main panel - to put on the others panels
         main_panel = MainPanel(self)
         box = wx.BoxSizer(wx.VERTICAL)
@@ -102,7 +99,6 @@ class FilesPanel(wx.Panel):
         upImage = wx.Bitmap(upImage)
         upBtn = wx.BitmapButton(self, name="upload file", size=(75, 75), bitmap=upImage, pos=(200, 800))
         upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
-        # upBtn.SetToolTip("upload file")
 
         # change the directory to download to button
         changeDirBtn = wx.Button(self, id=1, label="Change Directory", size=(100, 75), name="changeDir")
@@ -205,10 +201,8 @@ class FilesPanel(wx.Panel):
         openFileDialog.Destroy()
         if path:
             fileName = path[path.rfind("\\")+1:]
-            #TODO: CHECK THE FILE NAME IS NO LONGER THEN 10!!!
             print(f"PATH-{path};;;;;NAME-{fileName}")
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
-            # self.add_file(fileName)
 
     def updateDir(self, event):
         '''
@@ -221,7 +215,6 @@ class FilesPanel(wx.Panel):
         openDirDialog.Destroy()
         if path:
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
-            print(f"PATH-{path}")
             self.download_root = path
             current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
             current_download_text.SetFont(self.titlefont)

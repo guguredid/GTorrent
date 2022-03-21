@@ -110,10 +110,7 @@ class Server:
                         if length == "":
                             self._disconnect(current_socket)
                         else:
-                            # print("DATA LEN!!", length, self.port)
                             data = self._recv_data(current_socket, int(length))
-                            # print(f"IN SERVER::: {data}")
-                            # data = current_socket.recv(int(length)).decode()
                     except Exception as e:
                         print(f"[ERROR] in main loop11111 - {str(e)}")
                         self._disconnect(current_socket)
@@ -223,7 +220,6 @@ class Server:
         :return: None
         '''
         soc = self._get_soc_by_ip(ip)
-        # print(1111111, soc, self._users[soc])
         try:
             soc.send(str(len(msg)).zfill(10).encode())
             soc.send(msg)
@@ -252,12 +248,6 @@ class Server:
         :param client_socket: Socket
         :return: None
         '''
-        # if client_socket in self._users.keys():
-        #     print(f"{self._users[client_socket]} - disconnected")
-        #     del self._users[client_socket]
-        #     if self.type == 'main':
-        #         del self._used_ports[client_socket]
-        #     client_socket.close()
         if client_socket in self._users.keys():
             print(f"{self._users[client_socket]} - disconnected")
             del self._users[client_socket]

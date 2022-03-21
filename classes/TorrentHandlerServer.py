@@ -38,7 +38,6 @@ class TorrentHandlerServer:
                   }
         t_to_json = json.dumps(t_dict)
 
-        # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         # delete the temporary file
         os.remove(file_name)
 
@@ -94,7 +93,6 @@ class TorrentHandlerServer:
         :param file_name: str
         :return: str
         '''
-        #TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         with open(file_name, 'rb') as file:
             data = file.read()
         return TorrentHandlerServer._encrypt(data)
@@ -105,7 +103,6 @@ class TorrentHandlerServer:
         returns list of hashes for each part of the file
         :return: list
         '''
-        # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         chunks = TorrentHandlerServer._break_file(file_name)
         hash_list = []
         for c in chunks:
@@ -125,11 +122,6 @@ class TorrentHandlerServer:
         # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         with open(tname, 'r') as file:
             t_data = json.loads(file.read())
-        #TODO: CREATE NEW TORRENT OR CHANGE T_DATA BY THE IP AND STATUS???
-        # t = Torrent(t_data['name'], t_data['num'], t_data['hash_list'].split(';'), t_data['complete_hash'], t_data['ip_list'].split(';'))
-        # t.update_ip_list(ip, status)
-        # # convert back to json and return it
-        # t_to_json = json.dumps(t)
 
         # if the status is 0, delete the given ip
         if status == 0 and ip in t_data['ip_list']:
@@ -137,5 +129,4 @@ class TorrentHandlerServer:
         # if the status is 1, add the given ip
         else:
             t_data['ip_list'] += f';{ip}'
-        # return t_to_json
         return t_data

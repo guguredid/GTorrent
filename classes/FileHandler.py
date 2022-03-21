@@ -35,7 +35,6 @@ class FileHandler:
         '''
         with open(path, 'rb') as file:
             file.seek(((num - 1) * 1024))
-            # chunk, added = FileHandler._pad_chunk(file.read(1024))
             chunk = FileHandler._pad_chunk(file.read(1024))[0]
         return chunk
 

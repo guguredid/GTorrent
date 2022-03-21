@@ -18,7 +18,6 @@ class Torrent:
         self.ok = False
         # convert the data from string to dictionary
         try:
-            # t_dict = ast.literal_eval(json_str)
             t_dict = json.loads(json_str)
         except Exception as e:
             print(f"IN TORRENT! {str(e)}")

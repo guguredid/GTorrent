@@ -55,7 +55,6 @@ class Client:
                         self.disconnect()
                     else:
                         try:
-                            # print("IN CLIENT, THE LENGTH: ", length)
                             msg = self._recv_data(int(length))
                         except Exception as e:
                             print(f"ERROR IN CLIENT22222 -  {str(e)}")
@@ -96,7 +95,6 @@ class Client:
         while True:
             if self.running:
                 msg = self._send_msg_q.get()
-                # print("MSG FOR SERVER! ", msg)
                 try:
                     self.my_socket.send(str(len(msg)).zfill(10).encode())
                     if type(msg) is bytes:
@@ -109,16 +107,12 @@ class Client:
                     break
                 else:
                     print(f"SENT TO SERVER: {self.server_ip}", msg)
-            # else:
-            #     print("STOP SEND MSG!")
-            #     break
 
     def is_running(self):
         '''
         return if the client still running or not
         :return: bool
         '''
-        # print("IN RUNNING: ", self.running)
         return self.running
 
     def disconnect(self):
