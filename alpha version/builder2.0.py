@@ -277,6 +277,7 @@ def handle_ui_events(message):
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
+        upload_name = info
         # check if trying to upload a file for the second time
         upload_file()
         # pass
@@ -421,7 +422,7 @@ server = Server(2000, msg_q, 'files_server')
 server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
 
 # the root we download the files to
-DOWNLOAD_TO_ROOT = 'C:\\'
+DOWNLOAD_TO_ROOT = 'D:\\'
 
 file_server_client = None
 
