@@ -115,6 +115,13 @@ class FilesPanel(wx.Panel):
 
         self.sizer.Add(self.bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
+        # creator text
+        guy_text = wx.StaticText(self.scrollP, -1, label="Created by Guy Redid")
+        guy_text.SetFont(wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL))
+
+        self.sizer.AddSpacer(30)
+        self.sizer.Add(guy_text)
+
         self.SetSizer(self.sizer)
 
         pub.subscribe(self.add_file, "add_file")
