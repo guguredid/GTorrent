@@ -262,7 +262,6 @@ def handle_ui_events(message):
     global upload_name
     global DOWNLOAD_TO_ROOT
     global FILES_ROOT
-    global tname
 
     code = message[0]
     info = message[1:]
@@ -278,7 +277,10 @@ def handle_ui_events(message):
             # if already have the file, copy it the the download root
             # wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {info}")
             # copy the file to the monitored folder
-            shutil.copyfile(f"{FILES_ROOT}{tname}", f'{DOWNLOAD_TO_ROOT}{tname}')
+            print("ALREAADY HAVE FILE, COPYING IT")
+            print(f"{FILES_ROOT}{info}")
+            print(f'{DOWNLOAD_TO_ROOT}{info}')
+            shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
         # pass
     # asked to upload a file
     elif code == "2":
@@ -290,7 +292,7 @@ def handle_ui_events(message):
     # asked to change directory
     elif code == "3":
         print(f"ASKED TO CHANGE DIR TO {info}")
-        DOWNLOAD_TO_ROOT = info
+        DOWNLOAD_TO_ROOT = f"{info}\\"
         # pass
 
 
@@ -395,7 +397,7 @@ def upload_file():
         # check if the path exist
         if os.path.exists(upload_name):
             # check if the name is shorter then 10 letters
-            if len(only_name) < 0:
+            if len(only_name) < 10:
                 with open(upload_name, 'rb') as f:
                     data = f.read()
                 if file_server_client is not None:
