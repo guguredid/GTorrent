@@ -139,8 +139,17 @@ class FilesPanel(wx.Panel):
         text = wx.StaticText(self.scrollP, -1, label=filename)
         text.SetFont(self.titlefont)
 
-        # the file icon
-        fileImg = wx.Image("file.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
+        # text file icon
+        if filename.endswith('.txt'):
+            fileImg = wx.Image("file.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
+            # pass
+        elif filename.endswith('.mp4'):
+            fileImg = wx.Image("video.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
+            # pass
+        # image file icon
+        else:
+            fileImg = wx.Image("image.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
+
         fileImg = wx.StaticBitmap(self.scrollP, -1, wx.BitmapFromImage(fileImg))
 
         # the download button
