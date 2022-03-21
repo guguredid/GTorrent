@@ -262,6 +262,7 @@ def handle_ui_events(message):
     global upload_name
     global DOWNLOAD_TO_ROOT
     global FILES_ROOT
+    global tname
 
     code = message[0]
     info = message[1:]
@@ -389,14 +390,23 @@ def upload_file():
 
     only_name = upload_name.split('\\')[-1]
     print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
+    # check if uploaded the file already
     if only_name not in my_files:
+        # check if the path exist
         if os.path.exists(upload_name):
-            with open(upload_name, 'rb') as f:
-                data = f.read()
-            if file_server_client is not None:
-                file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+            # check if the name is shorter then 10 letters
+            if len(only_name) < 0:
+                with open(upload_name, 'rb') as f:
+                    data = f.read()
+                if file_server_client is not None:
+                    file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+            else:
+                # popup that the name is not valid
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"The file name must be shorter then 10 characters!")
         else:
             print("Your file path is not valid...")
+            # popup that the path is not valid
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"Your file path is not valid...")
     else:
         # popup that already have the file
         wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {only_name}...")
