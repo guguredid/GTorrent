@@ -364,8 +364,11 @@ def download_file(download_name):
             else:
                 # popup that the download failed
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
+
     # change the flag - to enable downloading other files
     is_downloading = False
+    # reset torrent's variables
+    tdata = '~'
 
 
 def upload_file():

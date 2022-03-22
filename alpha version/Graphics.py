@@ -50,9 +50,9 @@ class FilesPanel(wx.Panel):
         self.element = None
         self.Hide()
         self.SetBackgroundColour(wx.LIGHT_GREY)
-
+        # the root to download the file to
         self.download_root = download
-
+        # flag - download is happening or not
         self.is_downloading = False
 
         # text font
