@@ -53,6 +53,8 @@ class FilesPanel(wx.Panel):
 
         self.download_root = download
 
+        self.is_downloading = False
+
         # text font
         self.titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
 
@@ -116,11 +118,11 @@ class FilesPanel(wx.Panel):
         self.sizer.Add(self.bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
         # creator text
-        guy_text = wx.StaticText(self.scrollP, -1, label="Created by Guy Redid")
+        guy_text = wx.StaticText(self, -1, label="Created by Guy Redid")
         guy_text.SetFont(wx.Font(16, wx.DECORATIVE, wx.NORMAL, wx.NORMAL))
 
         self.sizer.AddSpacer(30)
-        self.sizer.Add(guy_text)
+        self.sizer.Add(guy_text, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
         self.SetSizer(self.sizer)
 
@@ -197,14 +199,24 @@ class FilesPanel(wx.Panel):
         '''
         pops the given message to the screen
         '''
+        if "downloading" in message.lower():
+            self.is_downloading = False
         wx.MessageBox(message, " ", wx.OK)
 
     def file_selected(self, event):
         '''
         handles case where one of the files' buttons is selected
         '''
-        print(event.GetEventObject().GetName())
-        wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
+        print("IN GRAPHICS!!!", event.GetEventObject().GetName())
+        if not self.is_downloading:
+            print("Start download")
+            self.is_downloading = True
+            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
+        else:
+            print("Cant    ......    Start download")
+            self.popup("Downloading already in process...")
+
+
 
     def uploadImage(self, event):
         '''

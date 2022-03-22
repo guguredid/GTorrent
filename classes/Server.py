@@ -72,7 +72,7 @@ class Server:
                             print(f"ERROR IN SERVER - {str(e)}")
                             self.close_client(self._users[client])
                         else:
-                            print(f"FILES THE CLIENT HAS: {client_files}")
+                            print(f"FILES THE CLIENT {address[0]} HAS: {client_files}")
                             self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
 
                     else:

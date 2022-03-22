@@ -310,6 +310,9 @@ def download_file(download_name):
             # popup that there was a problem with the connection to the server
             wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error with the torrent file...")
         else:
+            # popup that the download has started
+            wx.CallAfter(pub.sendMessage, "pop_up", message="Downloading, please wait...")
+
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')
 

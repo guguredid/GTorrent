@@ -90,27 +90,32 @@ while True:
         client_files = ServerProtocol.break_recv_file_names(info.decode())
         if '' in client_files:
             client_files.remove('')
-        if len(client_files) > 0:
-            files_in_system = db.get_torrents()
-            # check for files not in the system, if there are tell the client to delete them
-            for f in client_files:
-                if f"{f}.json" not in files_in_system:
-                    print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
-                    server.send_msg(ip, ServerProtocol.build_delete_file(f))
-            # update existing torrent files if the file is deleted from the client
-            for f in files_in_system:
-                with open(f'{TORRENT_ROOT}\\{f}.json', 'r') as tFile:
-                    torrent_data = tFile.read()
-                if ip in torrent_data and f not in client_files:
-                    torrent_data = torrent_data.replace(ip, '')
-                    torrent_data = torrent_data.strip(';')
-                #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
-                if len(torrent_data.split('ip_list')[1]) == 0:
-                    print(f"REMOVING {file_name} FROM THE SYSTEM!")
-                    os.remove(f'{TORRENT_ROOT}{file_name}.json')
-                    db.delete_torrent(f'{file_name}.json')
-                    server.send_all(ServerProtocol.build_file_deleted(file_name))
-            # TODO:update existing torrent files if the files deleted from the client
+        # if len(client_files) > 0:
+        files_in_system = db.get_torrents()
+        # check for files not in the system, if there are tell the client to delete them
+        for f in client_files:
+            if f"{f}.json" not in files_in_system:
+                print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
+                server.send_msg(ip, ServerProtocol.build_delete_file(f))
+        # update existing torrent files if the file is deleted from the client
+        for f in files_in_system:
+            with open(f'{TORRENT_ROOT}\\{f}', 'r') as tFile:
+                torrent_data = tFile.read()
+            if ip in torrent_data and f not in client_files:
+                print(f"REMOVING {ip} FROM {f}!!!!")
+                torrent_data = torrent_data.replace(ip, '')
+                # torrent_data = torrent_data.strip(';')
+            #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
+            print(f"IP RIGHT NOW: {torrent_data.split('ip_list')[1]}")
+            if len(torrent_data.split('ip_list')[1]) < len("255.255.255.255"):
+                print(f"REMOVING {file_name} FROM THE SYSTEM!- IN FIST CONNECTION!")
+                os.remove(f'{TORRENT_ROOT}{file_name}.json')
+                db.delete_torrent(f'{file_name}.json')
+                server.send_all(ServerProtocol.build_file_deleted(file_name))
+            else:
+                with open(f'{TORRENT_ROOT}\\{f}', 'w') as tFile:
+                    tFile.write(torrent_data)
+
 
     # receive file was deleted from the monitored folder
     elif code == '02'.encode():
