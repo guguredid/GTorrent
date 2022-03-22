@@ -101,19 +101,19 @@ while True:
         for f in files_in_system:
             with open(f'{TORRENT_ROOT}\\{f}', 'r') as tFile:
                 torrent_data = tFile.read()
-            if ip in torrent_data and f not in client_files:
+            if ip in torrent_data and f[:f.find('.json')] not in client_files:
                 print(f"REMOVING {ip} FROM {f}!!!!")
                 torrent_data = torrent_data.replace(ip, '')
                 # torrent_data = torrent_data.strip(';')
             #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
             print(f"IP RIGHT NOW: {torrent_data.split('ip_list')[1]}")
             if len(torrent_data.split('ip_list')[1]) < len("255.255.255.255"):
-                print(f"REMOVING {file_name} FROM THE SYSTEM!- IN FIST CONNECTION!")
-                os.remove(f'{TORRENT_ROOT}{file_name}.json')
-                db.delete_torrent(f'{file_name}.json')
-                server.send_all(ServerProtocol.build_file_deleted(file_name))
+                print(f"REMOVING {f[:f.find('.json')]} FROM THE SYSTEM!- IN FIRST CONNECTION!")
+                os.remove(f'{TORRENT_ROOT}{f}')
+                db.delete_torrent(f'{f}')
+                server.send_all(ServerProtocol.build_file_deleted(f[:f.find('.json')]))
             else:
-                with open(f'{TORRENT_ROOT}\\{f}', 'w') as tFile:
+                with open(f'{TORRENT_ROOT}{f}', 'w') as tFile:
                     tFile.write(torrent_data)
 
 
