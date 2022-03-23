@@ -258,23 +258,12 @@ def handle_ui_events(message):
         print(f"ASKED TO DOWNLOAD FILE {info}")
         if not is_downloading:
             if info not in my_files:
-
-                #TODO: FOR DEBUGING
-                start = datetime.now()
-
-                download_file(info)
-
-                # TODO: FOR DEBUGING
-                end = datetime.now()
-
-                print("DOWNLOAD TIME: ", end-start)
-
+                threading.Thread(target=download_file, args=(info, )).start()
             else:
                 # if already have the file, copy it to the monitored folder
                 print("ALREAADY HAVE FILE, COPYING IT")
-                print(f"{FILES_ROOT}{info}")
-                print(f'{DOWNLOAD_TO_ROOT}{info}')
                 shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Copied the file to the wanted folder", flag=True)
         else:
             wx.CallAfter(pub.sendMessage, "pop_up", message=f"Another download is occurring at the moment...")
     # asked to upload a file
@@ -301,6 +290,9 @@ def download_file(download_name):
     global DOWNLOAD_TO_ROOT
     global is_downloading
 
+    # TODO: FOR DEBUGING
+    start = datetime.now()
+
     # change the flag - to stop downloading other files
     is_downloading = True
 
@@ -312,7 +304,7 @@ def download_file(download_name):
 
     if tdata == '!':
         print("Downloading the file is not available at the moment...")
-        wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {download_name} is not available at the moment...")
+        wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {download_name} is not available at the moment...", flag=True)
 
     elif tdata != '':
         print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
@@ -320,10 +312,8 @@ def download_file(download_name):
         if not t.is_ok():
             print("There was an error with the torrent file...")
             # popup that there was a problem with the connection to the server
-            wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error with the torrent file...")
+            wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error with the torrent file...", flag=True)
         else:
-            # popup that the download has started
-            wx.CallAfter(pub.sendMessage, "pop_up", message="Downloading, please wait...")
 
             # data from the torrent file
             tname = t.get_name().replace('.torrent', '')
@@ -367,20 +357,25 @@ def download_file(download_name):
                     shutil.copyfile(f'{DOWNLOAD_TO_ROOT}{tname}', f"{FILES_ROOT}{tname}")
 
                     # popup that the file was created
-                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!")
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!", flag=True)
 
                 else:
                     os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
-                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
             else:
                 # popup that the download failed
-                wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...")
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
 
     # change the flag - to enable downloading other files
     is_downloading = False
     # reset torrent's variables
     tdata = '~'
+
+    # TODO: FOR DEBUGING
+    end = datetime.now()
+
+    print("DOWNLOAD TIME: ", end - start)
 
 
 def upload_file():

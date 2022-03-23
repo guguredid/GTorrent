@@ -46,7 +46,7 @@ class Client:
             self.running = True
             while self.running:
                 try:
-                    length = self.my_socket.recv(10).decode()
+                    length = int(self.my_socket.recv(10).decode())
                 except Exception as e:
                     print(111111111)
                     self.disconnect()
@@ -55,7 +55,7 @@ class Client:
                         self.disconnect()
                     else:
                         try:
-                            msg = self._recv_data(int(length))
+                            msg = self._recv_data(length)
                         except Exception as e:
                             print(f"ERROR IN CLIENT22222 -  {str(e)}")
                             self.disconnect()

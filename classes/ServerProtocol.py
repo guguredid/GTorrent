@@ -127,7 +127,7 @@ class ServerProtocol:
             with open(f"{tname}.json", 'r') as file:
                 data = json.load(file)
             connected_ips = []
-            #
+            # check if sharing ip is connected
             for ip in ip_list:
                 if ip in data["ip_list"]:
                     connected_ips.append(ip)
@@ -135,11 +135,12 @@ class ServerProtocol:
             # check if there are connected sharing people
             if len(connected_ips) > 0:
                 data["ip_list"] = ';'.join(connected_ips)
-                print(f"DATA: {data}")
 
                 data = json.dumps(data).encode()
             else:
                 data = '!'.encode()
+
+        print(f"SENDING TORRENT FILE: {data}")
 
         return "07".encode() + data
 

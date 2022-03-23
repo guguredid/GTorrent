@@ -1,7 +1,9 @@
+from pubsub import pub
 import wx
 import wx.lib.scrolledpanel as scrolled
 import string
-from pubsub import pub
+import threading
+
 
 
 class MyFrame(wx.Frame):
@@ -54,6 +56,8 @@ class FilesPanel(wx.Panel):
         self.download_root = download
         # flag - download is happening or not
         self.is_downloading = False
+        # saving the current downloaded file's download button
+        self.fileBtn = None
 
         # text font
         self.titlefont = wx.Font(22, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
@@ -144,10 +148,9 @@ class FilesPanel(wx.Panel):
         # text file icon
         if filename.endswith('.txt'):
             fileImg = wx.Image("file.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
-            # pass
+        # video file icon
         elif filename.endswith('.mp4'):
             fileImg = wx.Image("video.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
-            # pass
         # image file icon
         else:
             fileImg = wx.Image("image.png", wx.BITMAP_TYPE_ANY).Rescale(75, 75)
@@ -189,54 +192,51 @@ class FilesPanel(wx.Panel):
         '''
         removes the file from the scrolled panel
         '''
-        print("IN REMOVE! ", filename)
-
         self.file_sizers[filename].Clear(True)
 
         self.scrollP.Layout()
 
-    def popup(self, message):
+    def popup(self, message, flag=None):
         '''
         pops the given message to the screen
         '''
-        if "downloading" in message.lower():
+        if flag:
             self.is_downloading = False
+            if self.fileBtn:
+                self.fileBtn.SetBackgroundColour(wx.LIGHT_GREY)
+                self.fileBtn = None
         wx.MessageBox(message, " ", wx.OK)
 
     def file_selected(self, event):
         '''
         handles case where one of the files' buttons is selected
         '''
-        print("IN GRAPHICS!!!", event.GetEventObject().GetName())
+        print("IN GRAPHICS!!!", event.GetEventObject().GetName(), self.is_downloading)
         if not self.is_downloading:
-            print("Start download")
             self.is_downloading = True
+            self.popup("Downloading, please wait...")
+            self.fileBtn = event.GetEventObject()
+            self.fileBtn.SetBackgroundColour(wx.GREEN)
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
         else:
-            print("Cant    ......    Start download")
             self.popup("Downloading already in process...")
-
-
 
     def uploadImage(self, event):
         '''
         handles a case where the upload file button is clicked
         '''
-        print("in Upload")
         openFileDialog = wx.FileDialog(self, "Open", "", "", "", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
         openFileDialog.Destroy()
         if path:
             fileName = path[path.rfind("\\")+1:]
-            print(f"PATH-{path};;;;;NAME-{fileName}")
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
 
     def updateDir(self, event):
         '''
         handles change for the GTorrent's directory
         '''
-        print("in UpdateDir")
         openDirDialog = wx.DirDialog(None, "Choose input directory", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
         openDirDialog.ShowModal()
         path = openDirDialog.GetPath()
