@@ -4,6 +4,7 @@ from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
 from classes.Server import Server
 from Graphics import MyFrame
+from pubsub import pub
 from generalSetting import FILES_ROOT
 from generalSetting import TORRENT_SENDER_ADDRESS
 import socket
@@ -15,8 +16,9 @@ import os
 import win32file
 import win32con
 import shutil
+from datetime import datetime
 import wx
-from pubsub import pub
+
 
 
 def encrypt(data):
@@ -256,7 +258,17 @@ def handle_ui_events(message):
         print(f"ASKED TO DOWNLOAD FILE {info}")
         if not is_downloading:
             if info not in my_files:
+
+                #TODO: FOR DEBUGING
+                start = datetime.now()
+
                 download_file(info)
+
+                # TODO: FOR DEBUGING
+                end = datetime.now()
+
+                print("DOWNLOAD TIME: ", end-start)
+
             else:
                 # if already have the file, copy it to the monitored folder
                 print("ALREAADY HAVE FILE, COPYING IT")
