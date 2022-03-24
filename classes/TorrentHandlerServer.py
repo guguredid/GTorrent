@@ -14,7 +14,7 @@ class TorrentHandlerServer:
     '''
 
     @staticmethod
-    #FINISH
+
     def build_torrent(file_name, ip):
         '''
         builds a torrent file for the given file, and deletes the file afterward
@@ -110,7 +110,6 @@ class TorrentHandlerServer:
         return hash_list
 
     @staticmethod
-    #FINISH
     def update_ip_list(tname, ip, status=0):
         '''
         updates the ip list according to the status, in the given torrent file
@@ -119,7 +118,6 @@ class TorrentHandlerServer:
         :param status: int
         :return: json
         '''
-        # TODO: DECIDE ON A SPECIFIC ROOT TO BE BEFORE THE FILE NAME (C:/GTorrent/file.txt)
         with open(tname, 'r') as file:
             t_data = json.loads(file.read())
 
