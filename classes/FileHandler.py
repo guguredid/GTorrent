@@ -14,16 +14,13 @@ class FileHandler:
         '''
         padding the given data to be 1024 bytes
         :param data: bytes
-        :return: tuple
+        :return: bytes
         '''
-        # flag - did pad the data or not
-        not_added = True
         if len(data) < 1024:
             # if the file's length % 1024 = 0 check so we won't add spare spaces to the end of the file
             if len(data) != 0:
                 data += (' ' * (1024 - len(data))).encode()
-            not_added = False
-        return (data, not_added)
+        return data
 
     @staticmethod
     def get_part(path, num):
@@ -35,7 +32,7 @@ class FileHandler:
         '''
         with open(path, 'rb') as file:
             file.seek(((num - 1) * 1024))
-            chunk = FileHandler._pad_chunk(file.read(1024))[0]
+            chunk = FileHandler._pad_chunk(file.read(1024))
         return chunk
 
     @staticmethod

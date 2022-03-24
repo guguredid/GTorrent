@@ -64,7 +64,7 @@ class ClientProtocol:
         '''
         return a message for the server about adding a new file to the system
         :param file_name: str
-        :param data: bytes(???)
+        :param data: bytes
         :return: bytes
         '''
         return f"05{file_name.ljust(10)}".encode() + data
@@ -129,7 +129,7 @@ class ClientProtocol:
         '''
         return the name of the file deleted from the system
         :param data: str
-        :return: tuple
+        :return: str
         '''
         return data.rstrip()
 
@@ -154,6 +154,17 @@ class ClientProtocol:
         return data[:10].rstrip(), int(data[10:])
 
     @staticmethod
+    def build_send_part(file_name, num, data):
+        '''
+        return a message for sending a file's part to someone
+        :param file_name: str
+        :param num: int
+        :param data: bytes
+        :return: bytes
+        '''
+        return f"11{file_name.ljust(10)}{str(num).zfill(4)}".encode() + data
+
+    @staticmethod
     def break_recv_part(data):
         '''
         return a tuple with the file the part is from, the part's number and the part itself
@@ -163,22 +174,11 @@ class ClientProtocol:
         return (data[2:12].decode().rstrip(), int(data[12:16]), data[16:])
 
     @staticmethod
-    def build_send_part(file_name, num, data):
-        '''
-        return a message for sending a file's part to someone
-        :param file_name: str
-        :param num: int
-        :param data: bytes(????)
-        :return: str\bytes????
-        '''
-        return f"11{file_name.ljust(10)}{str(num).zfill(4)}".encode() + data
-
-    @staticmethod
     def break_recv_port(data):
         '''
         return the port sent for client
         :param data: bytes
-        :return: int
+        :return: str
         '''
         return data[2:].decode()
 

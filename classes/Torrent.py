@@ -33,7 +33,7 @@ class Torrent:
     def is_ok(self):
         '''
         return the flag - managed to turn the json string into Torrent object or not
-        :return: str
+        :return: bool
         '''
         return self.ok
 
@@ -66,30 +66,30 @@ class Torrent:
         return self.ip_list
 
     #TODO: DO I NEED THIS FUNCTION???
-    def update_ip_list(self, ip, status=0):
-        '''
-        updates the ip list of the torrent
-        :param ip: str
-        :param status: int
-        :return: None
-        '''
-        # if the status is 0, delete the given ip
-        if status == 0 and ip in self.ip_list:
-            self.ip_list.remove(ip)
-        # if the status is 1, add the given ip
-        else:
-            self.ip_list.append(ip)
+    # def update_ip_list(self, ip, status=0):
+    #     '''
+    #     updates the ip list of the torrent
+    #     :param ip: str
+    #     :param status: int
+    #     :return: None
+    #     '''
+    #     # if the status is 0, delete the given ip
+    #     if status == 0 and ip in self.ip_list:
+    #         self.ip_list.remove(ip)
+    #     # if the status is 1, add the given ip
+    #     else:
+    #         self.ip_list.append(ip)
 
     #TODO: DO I NEED THIS FUNCTION???
-    def to_dict(self):
-        '''
-        return dict for converting the object to json
-        :return: dict
-        '''
-        return {
-            "name": self.torrent_name,
-            "num": self.num_parts,
-            "hash_list": ";".join(self.hash_list),
-            "complete_hash": self.complete_hash,
-            "ip_list": ";".join(self.ip_list)
-                }
+    # def to_dict(self):
+    #     '''
+    #     return dict for converting the object to json
+    #     :return: dict
+    #     '''
+    #     return {
+    #         "name": self.torrent_name,
+    #         "num": self.num_parts,
+    #         "hash_list": ";".join(self.hash_list),
+    #         "complete_hash": self.complete_hash,
+    #         "ip_list": ";".join(self.ip_list)
+    #             }

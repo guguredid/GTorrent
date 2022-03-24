@@ -84,6 +84,7 @@ class Client:
 
     def send_msg(self, msg):
         '''
+        puts the given message into the _send_msg_q
         :param msg: str\bytes
         :return:
         '''

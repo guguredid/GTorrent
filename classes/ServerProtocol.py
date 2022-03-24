@@ -119,7 +119,7 @@ class ServerProtocol:
         return a message for sending a torrent name to the user
         :param tname: str
         :param ip_list: list
-        :return: str
+        :return: bytes
         '''
         data = '!'.encode()
         if os.path.exists(f"{tname}.json"):

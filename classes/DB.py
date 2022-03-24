@@ -11,7 +11,6 @@ class DB:
         create data base with the given name
         :param name: str
         '''
-        # WILL BE "GTorrentDB"
         self.db_name = name
         # data base variables
         self.tbl_name = 'TorrentData'   # table name
@@ -23,7 +22,7 @@ class DB:
     def _createDB(self):
         '''
         create / connect data base
-        :return:
+        :return: None
         '''
         # create / connect data base
         self.con = sqlite3.connect(self.db_name)

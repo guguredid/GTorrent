@@ -116,7 +116,6 @@ while True:
                 with open(f'{TORRENT_ROOT}{f}', 'w') as tFile:
                     tFile.write(torrent_data)
 
-
     # receive file was deleted from the monitored folder
     elif code == '02'.encode():
         files_in_system = db.get_torrents()
@@ -148,6 +147,7 @@ while True:
         # if the file is not in the system, tell the client to delete it
         if f'{file_name}.json' not in files_in_system:
             server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
+        #TODO: NEED TO REMOVE IT IF NOT!!!
 
     # receive a download was finished
     elif code == '06'.encode():
