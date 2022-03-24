@@ -237,19 +237,22 @@ class FilesPanel(wx.Panel):
         '''
         handles change for the GTorrent's directory
         '''
-        openDirDialog = wx.DirDialog(None, "Choose input directory", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
-        openDirDialog.ShowModal()
-        path = openDirDialog.GetPath()
-        openDirDialog.Destroy()
-        if path:
-            wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
-            self.download_root = path
-            current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
-            current_download_text.SetFont(self.titlefont)
-            self.bottom_buttons_sizer.Remove(4)
-            self.bottom_buttons_sizer.Add(current_download_text)
-            self.bottom_buttons_sizer.Layout()
-            self.Sizer.Layout()
+        if not self.is_downloading:
+            openDirDialog = wx.DirDialog(None, "Choose input directory", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
+            openDirDialog.ShowModal()
+            path = openDirDialog.GetPath()
+            openDirDialog.Destroy()
+            if path:
+                wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
+                self.download_root = path
+                current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
+                current_download_text.SetFont(self.titlefont)
+                self.bottom_buttons_sizer.Remove(4)
+                self.bottom_buttons_sizer.Add(current_download_text)
+                self.bottom_buttons_sizer.Layout()
+                self.Sizer.Layout()
+        else:
+            self.popup("Can't change download directory while downloading...")
 
 
 if __name__ == '__main__':
