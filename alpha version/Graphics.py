@@ -105,10 +105,12 @@ class FilesPanel(wx.Panel):
         upImage = wx.Bitmap(upImage)
         upBtn = wx.BitmapButton(self, name="upload file", size=(75, 75), bitmap=upImage, pos=(200, 800))
         upBtn.Bind(wx.EVT_BUTTON, self.uploadImage)
+        upBtn.SetToolTip("Upload file")
 
         # change the directory to download to button
         changeDirBtn = wx.Button(self, id=1, label="Change Directory", size=(100, 75), name="changeDir")
         changeDirBtn.Bind(wx.EVT_BUTTON, self.updateDir)
+        changeDirBtn.SetToolTip("Change download directory")
         current_download_text = wx.StaticText(self, -1, label=f"Current download directory {self.download_root}: ")
         current_download_text.SetFont(self.titlefont)
 
@@ -167,6 +169,7 @@ class FilesPanel(wx.Panel):
 
         downBtn.SetBackgroundColour(wx.LIGHT_GREY)
         downBtn.SetWindowStyleFlag(wx.NO_BORDER)
+        downBtn.SetToolTip("Download file")
 
         spaceFromLeft = downloadImg.GetSize()[0] / 2 + downloadImg.GetSize()[0]
         spaceFromRight = fileImg.GetSize()[0] + text.GetSize()[0]
