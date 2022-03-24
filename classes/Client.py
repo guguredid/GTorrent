@@ -24,9 +24,10 @@ class Client:
         self.server_port = server_port
         self.server_ip = server_ip
         self.my_socket = socket.socket()
-
+        # flag - the clients runs or not
         self.running = False
 
+        # start the threads responsible for connection with the server
         threading.Thread(target=self._main_loop).start()
         time.sleep(1)
         threading.Thread(target=self._send_msg).start()
@@ -36,32 +37,33 @@ class Client:
         initializing the socket and waits for messages
         :return: None
         '''
-        #TODO: WHAT DO I DO IF THE SERVER IS DOWN??
-        try:
-            self.my_socket.connect((self.server_ip, self.server_port))
-        except Exception as e:
-            print(f"[ERROR] in main loop1 - {str(e)}")
-            self.disconnect()
-        else:
-            self.running = True
-            while self.running:
-                try:
-                    length = int(self.my_socket.recv(10).decode())
-                except Exception as e:
-                    print(111111111)
-                    self.disconnect()
-                else:
-                    if length == '':
+
+        while True:
+            # first connection / try to reconnect if disconnection occurs
+            try:
+                self.my_socket.connect((self.server_ip, self.server_port))
+            except Exception as e:
+                print(f"[ERROR] in main loop1 - {str(e)}")
+                self.disconnect()
+            else:
+                self.running = True
+                while self.running:
+                    try:
+                        length = int(self.my_socket.recv(10).decode())
+                    except Exception as e:
                         self.disconnect()
                     else:
-                        try:
-                            msg = self._recv_data(length)
-                        except Exception as e:
-                            print(f"ERROR IN CLIENT22222 -  {str(e)}")
+                        if length == '':
                             self.disconnect()
                         else:
-                            self.msg_q.put((self.server_ip, msg))
-            print("MAIN LOOP STOPPED!!!")
+                            try:
+                                msg = self._recv_data(length)
+                            except Exception as e:
+                                print(f"ERROR IN CLIENT22222 -  {str(e)}")
+                                self.disconnect()
+                            else:
+                                self.msg_q.put((self.server_ip, msg))
+                print("MAIN LOOP STOPPED!!!")
 
     def _recv_data(self, length):
         '''
@@ -70,6 +72,7 @@ class Client:
         :return: bytes
         '''
         data = bytearray()
+        # loops and receive the data in chunks of 1024
         while len(data) < length:
             slice = length - len(data)
             if slice > 1024:
@@ -120,7 +123,7 @@ class Client:
         disconnects from the server
         :return: None
         '''
-        print("=======================DISCONNCTED")
+        print("=======================DISCONNECTED")
         self.running = False
         self.my_socket.close()
 

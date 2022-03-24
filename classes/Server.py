@@ -27,7 +27,7 @@ class Server:
         self._users = {}  # socket: ip
         self.server_socket = socket.socket()
         self.type = type
-        # if this is the main server, create a list of used ports for files servers
+        # if this is the main server, create a list of used ports for files servers, and the database
         if self.type == 'main':
             self._used_ports = {'test': 1000}   # socket: port
             self.db = DB("GTorrent")
@@ -53,42 +53,39 @@ class Server:
                     print(f'{address[0]} - connected')
                     self._users[client] = address[0]
 
-                    print("TYPE=", self.type)
-
                     # check if the main server
                     if self.type == 'main':
                         # generate port for sending files' server for the client
                         port = 1000
                         while port in self._used_ports.values():
                             port = random.randint(2001, 2101)
+                        # save the port so other clients won't use it
                         self._used_ports[client] = port
+                        # send the client the port for him
                         msg = ServerProtocol.build_send_port(port)
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                         # send the client a list of the files in the server
                         self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
+                        # receive the files the client has
                         try:
                             client_files = client.recv(int(client.recv(10).decode())).decode()[2:]
                         except Exception as e:
                             print(f"ERROR IN SERVER - {str(e)}")
                             self.close_client(self._users[client])
                         else:
-                            print(f"FILES THE CLIENT {address[0]} HAS: {client_files}")
+                            # print(f"FILES THE CLIENT {address[0]} HAS: {client_files}")
                             self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
-
+                    # the server is not the main one (it's files server)
                     else:
-                        print("FIRST CONNECTION!")
                         # receive data from existing client
                         data = ''
                         try:
                             length = client.recv(10).decode()
-                            print("AFTER LENGTH")
                             # check if there is problem/disconnect
                             if length == "":
                                 self._disconnect(client)
                             else:
-                                print("PORTTTT", self.port)
                                 data = self._recv_data(client, int(length))
-                                print("AFTER DATA")
                         except Exception as e:
                             print(f"[ERROR] in main loop0000 - {str(e)}")
                             self._disconnect(client)
@@ -98,11 +95,8 @@ class Server:
                                 self._disconnect(client)
                             # push the data we received to the queue
                             else:
-                                print("RECEIVE DATA ", data)
                                 self.msg_q.put((self._get_ip_by_socket(client), data))
-                                print("AFTER PUT!")
                 else:
-                    print("HEREEEE")
                     # receive data from existing client
                     try:
                         length = current_socket.recv(10).decode()
