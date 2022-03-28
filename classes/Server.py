@@ -1,7 +1,6 @@
 '''
 file for a class representing a server in the system
 '''
-from classes.ClientProtocol import ClientProtocol
 from classes.ServerProtocol import ServerProtocol
 from classes.DB import DB
 import socket
@@ -154,19 +153,6 @@ class Server:
                 break
         return soc
 
-    # def recv_file(self, client_soc):
-    #     '''
-    #     receives a file from the client, saves it and adds to the message queue a note about the file
-    #     :param client_soc: Socket
-    #     :return: None
-    #     '''
-    #     # receive the file data (name, len)
-    #
-    #     # receive the file and save it in a specific place
-    #
-    #     # add a message about it in the message queue
-    #     pass
-
     def send_msg(self, ip, msg):
         '''
         sends to the given ip the given message
@@ -176,10 +162,10 @@ class Server:
         '''
         soc = self._get_soc_by_ip(ip)
         if soc is not None:
+            if type(msg) == str:
+                msg = msg.encode()
             try:
                 soc.send(str(len(msg)).zfill(10).encode())
-                if type(msg) == str:
-                    msg = msg.encode()
                 soc.send(msg)
             except Exception as e:
                 print(f'[ERROR] int send_msg - {str(e)}')
@@ -195,15 +181,6 @@ class Server:
         '''
         for user_ip in self._users.values():
             threading.Thread(target=self.send_msg, args=(user_ip, msg,)).start()
-
-    # def send_file(self, ip, msg):
-    #     '''
-    #     send to the given ip the given message
-    #     :param ip: str
-    #     :param msg: str
-    #     :return: None
-    #     '''
-    #     pass
 
     def send_part(self, ip, msg):
         '''

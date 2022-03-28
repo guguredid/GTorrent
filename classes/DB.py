@@ -54,10 +54,10 @@ class DB:
         # flag - managed to add the torrent
         flag = False
         if not self._name_exist(name):
-            flag = True
             cmd = f"INSERT INTO {self.tbl_name} VALUES ('{name}') "
             self.cursor.execute(cmd)
             self.con.commit()
+            flag = True
         return flag
 
     def delete_torrent(self, name):
@@ -69,10 +69,10 @@ class DB:
         # flag - managed to delete the torrent or not
         flag = False
         if self._name_exist(name):
-            flag = True
             cmd = f"DELETE FROM {self.tbl_name} WHERE name='{name}'"
             self.cursor.execute(cmd)
             self.con.commit()
+            flag = True
         return flag
 
     def get_torrents(self):

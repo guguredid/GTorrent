@@ -1,12 +1,13 @@
 from pubsub import pub
 import wx
 import wx.lib.scrolledpanel as scrolled
-import string
-import threading
-
 
 
 class MyFrame(wx.Frame):
+    '''
+    class representing the main window the GUI is going to be at
+    '''
+
     def __init__(self, parent=None):
         super(MyFrame, self).__init__(parent, title="GTorrent", size=wx.DisplaySize())
         # create main panel - to put on the others panels
@@ -27,6 +28,10 @@ class MyFrame(wx.Frame):
 
 
 class MainPanel(wx.Panel):
+    '''
+    class representing the main panel of the GUI
+    '''
+
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.frame = parent
@@ -44,6 +49,10 @@ class MainPanel(wx.Panel):
 
 
 class FilesPanel(wx.Panel):
+    '''
+    class representing the main panel of the system
+    '''
+
     def __init__(self, parent, frame, download='D\\'):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
@@ -132,6 +141,7 @@ class FilesPanel(wx.Panel):
 
         self.SetSizer(self.sizer)
 
+        # connect the UI with the logic via pubsub
         pub.subscribe(self.add_file, "add_file")
         pub.subscribe(self.remove_file, "remove_file")
         pub.subscribe(self.popup, "pop_up")
@@ -139,6 +149,7 @@ class FilesPanel(wx.Panel):
     def add_file(self, filename):
         '''
         adds file name to the scrolled bar
+        :param filename: str
         '''
         # sub sizer for each file
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -194,6 +205,7 @@ class FilesPanel(wx.Panel):
     def remove_file(self, filename):
         '''
         removes the file from the scrolled panel
+        :param filename: str
         '''
         self.file_sizers[filename].Clear(True)
 
@@ -202,9 +214,14 @@ class FilesPanel(wx.Panel):
     def popup(self, message, flag=None):
         '''
         pops the given message to the screen
+        :param message: str
+        :param flag: bool
         '''
+        # flag argument is used to tell if the pop up is related to a download, if not no need to change button's color
+        # and is downloading status
         if flag:
             self.is_downloading = False
+            # check if a file is downloading (if so fileBtn is not None). If so, stop the download
             if self.fileBtn:
                 self.fileBtn.SetBackgroundColour(wx.LIGHT_GREY)
                 self.fileBtn = None
@@ -213,13 +230,15 @@ class FilesPanel(wx.Panel):
     def file_selected(self, event):
         '''
         handles case where one of the files' buttons is selected
+        :param event: Event
         '''
-        print("IN GRAPHICS!!!", event.GetEventObject().GetName(), self.is_downloading)
+        # print("IN GRAPHICS!!!", event.GetEventObject().GetName(), self.is_downloading)
         if not self.is_downloading:
             self.is_downloading = True
             self.popup("Downloading, please wait...")
             self.fileBtn = event.GetEventObject()
             self.fileBtn.SetBackgroundColour(wx.GREEN)
+            # update the logic that a file was selected
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"1{event.GetEventObject().GetName()}")
         else:
             self.popup("Downloading already in process...")
@@ -227,18 +246,20 @@ class FilesPanel(wx.Panel):
     def uploadImage(self, event):
         '''
         handles a case where the upload file button is clicked
+        :param event: Event
         '''
         openFileDialog = wx.FileDialog(self, "Open", "", "", "", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
         openFileDialog.Destroy()
         if path:
-            fileName = path[path.rfind("\\")+1:]
+            # update the logic that a file was uploaded
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
 
     def updateDir(self, event):
         '''
         handles change for the GTorrent's directory
+        :param event: Event
         '''
         if not self.is_downloading:
             openDirDialog = wx.DirDialog(None, "Choose input directory", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
@@ -246,7 +267,9 @@ class FilesPanel(wx.Panel):
             path = openDirDialog.GetPath()
             openDirDialog.Destroy()
             if path:
+                # update the logic that the download path had changed
                 wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
+                # update the graphics that the download path had changed
                 self.download_root = path
                 current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
                 current_download_text.SetFont(self.titlefont)
@@ -263,5 +286,3 @@ if __name__ == '__main__':
     frame = MyFrame()
     frame.Show()
     app.MainLoop()
-
-

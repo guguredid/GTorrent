@@ -1,4 +1,3 @@
-# import ast
 import json
 '''
 file for a class representing torrent file
@@ -79,17 +78,3 @@ class Torrent:
     #     # if the status is 1, add the given ip
     #     else:
     #         self.ip_list.append(ip)
-
-    #TODO: DO I NEED THIS FUNCTION???
-    # def to_dict(self):
-    #     '''
-    #     return dict for converting the object to json
-    #     :return: dict
-    #     '''
-    #     return {
-    #         "name": self.torrent_name,
-    #         "num": self.num_parts,
-    #         "hash_list": ";".join(self.hash_list),
-    #         "complete_hash": self.complete_hash,
-    #         "ip_list": ";".join(self.ip_list)
-    #             }

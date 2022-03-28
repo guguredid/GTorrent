@@ -99,12 +99,15 @@ class Client:
         while True:
             if self.running:
                 msg = self._send_msg_q.get()
+                if type(msg) is str:
+                    msg = msg.encode()
                 try:
                     self.my_socket.send(str(len(msg)).zfill(10).encode())
-                    if type(msg) is bytes:
-                        self.my_socket.send(msg)
-                    else:
-                        self.my_socket.send(msg.encode())
+                    # if type(msg) is bytes:
+                    #     self.my_socket.send(msg)
+                    # else:
+                    #     self.my_socket.send(msg.encode())
+                    self.my_socket.send(msg.encode())
                 except Exception as e:
                     print(f'ERROR IN CLIENT! {str(e)}')
                     self.disconnect()
