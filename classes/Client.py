@@ -26,6 +26,8 @@ class Client:
         self.my_socket = socket.socket()
         # flag - the clients runs or not
         self.running = False
+        # flag - the object still running
+        self.thread_running = True
 
         # start the threads responsible for connection with the server
         threading.Thread(target=self._main_loop, args=()).start()
@@ -38,6 +40,7 @@ class Client:
         :return: None
         '''
 
+        # while self.thread_running:
         while True:
             # first connection / try to reconnect if disconnection occurs
             try:
@@ -98,6 +101,7 @@ class Client:
         :return: None
         '''
 
+        # while self.thread_running:
         while True:
             if self.running:
                 msg = self._send_msg_q.get()
@@ -127,5 +131,14 @@ class Client:
         '''
         print("=======================DISCONNECTED")
         self.running = False
+        # self.thread_running = False
         self.my_socket.close()
+
+    def kill_client(self):
+        '''
+        disconnects from the server and kills all threads
+        :return: None
+        '''
+        threads = threading.get_ident()
+
 
