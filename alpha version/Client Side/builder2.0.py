@@ -3,10 +3,10 @@ from classes.Torrent import Torrent
 from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
 from classes.Server import Server
-from .Graphics import MyFrame
+from Graphics import MyFrame
 from pubsub import pub
-from .generalSetting import FILES_ROOT
-from .generalSetting import TORRENT_SENDER_ADDRESS
+from generalSetting import FILES_ROOT
+from generalSetting import TORRENT_SENDER_ADDRESS
 import socket
 import threading
 import sys
