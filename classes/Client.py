@@ -28,9 +28,9 @@ class Client:
         self.running = False
 
         # start the threads responsible for connection with the server
-        threading.Thread(target=self._main_loop).start()
+        threading.Thread(target=self._main_loop, args=()).start()
         time.sleep(1)
-        threading.Thread(target=self._send_msg).start()
+        threading.Thread(target=self._send_msg, args=()).start()
 
     def _main_loop(self):
         '''
@@ -47,7 +47,9 @@ class Client:
                 self.disconnect()
             else:
                 self.running = True
+                print("CLIENTTTTTTT", self.running)
                 while self.running:
+                # while True:
                     try:
                         length = int(self.my_socket.recv(10).decode())
                     except Exception as e:
@@ -103,11 +105,7 @@ class Client:
                     msg = msg.encode()
                 try:
                     self.my_socket.send(str(len(msg)).zfill(10).encode())
-                    # if type(msg) is bytes:
-                    #     self.my_socket.send(msg)
-                    # else:
-                    #     self.my_socket.send(msg.encode())
-                    self.my_socket.send(msg.encode())
+                    self.my_socket.send(msg)
                 except Exception as e:
                     print(f'ERROR IN CLIENT! {str(e)}')
                     self.disconnect()
