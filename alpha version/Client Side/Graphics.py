@@ -1,6 +1,6 @@
 from pubsub import pub
-import wx
 import wx.lib.scrolledpanel as scrolled
+import wx
 
 
 class MyFrame(wx.Frame):

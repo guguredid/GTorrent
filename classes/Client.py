@@ -5,6 +5,8 @@ import socket
 import threading
 import queue
 import time
+import os
+import psutil
 
 
 class Client:
@@ -30,9 +32,9 @@ class Client:
         self.thread_running = True
 
         # start the threads responsible for connection with the server
-        threading.Thread(target=self._main_loop, args=()).start()
+        threading.Thread(target=self._main_loop, args=(), daemon=True).start()
         time.sleep(1)
-        threading.Thread(target=self._send_msg, args=()).start()
+        threading.Thread(target=self._send_msg, args=(), daemon=True).start()
 
     def _main_loop(self):
         '''
@@ -139,6 +141,8 @@ class Client:
         disconnects from the server and kills all threads
         :return: None
         '''
-        threads = threading.get_ident()
-
-
+        self.disconnect()
+        parent_id = os.getpid()
+        parent = psutil.Process(parent_id)
+        for child in parent.children(recursive=True):
+            child.kill()
