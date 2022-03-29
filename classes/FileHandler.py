@@ -1,21 +1,21 @@
 import os
-'''
+"""
 file for functions for breaking and building files
-'''
+"""
 
 
 class FileHandler:
-    '''
+    """
     class for building and breaking files
-    '''
+    """
 
     @staticmethod
     def _pad_chunk(data):
-        '''
+        """
         padding the given data to be 1024 bytes
         :param data: bytes
         :return: bytes
-        '''
+        """
         if len(data) < 1024:
             # if the file's length % 1024 = 0 check so we won't add spare spaces to the end of the file
             if len(data) != 0:
@@ -24,12 +24,12 @@ class FileHandler:
 
     @staticmethod
     def get_part(path, num):
-        '''
+        """
         return specific chunk from a given file
         :param path: str
         :param num: int
         :return: bytes
-        '''
+        """
         with open(path, 'rb') as file:
             file.seek(((num - 1) * 1024))
             chunk = FileHandler._pad_chunk(file.read(1024))
@@ -37,13 +37,13 @@ class FileHandler:
 
     @staticmethod
     def insert_part(path, data, num):
-        '''
+        """
         insert the given data in the given file in the specific place
         :param path: str
         :param data: bytes
         :param num: int
         :return: None
-        '''
+        """
         print("THE PATH:", path)
         # check if the file exist first
         if not os.path.isfile(path):

@@ -3,24 +3,24 @@ import json
 import hashlib
 import os
 
-'''
+"""
 file for functions building and updating torrent files
-'''
+"""
 
 
 class TorrentHandlerServer:
-    '''
+    """
     class for handling torrent files in the server
-    '''
+    """
 
     @staticmethod
     def build_torrent(file_name, ip):
-        '''
+        """
         builds a torrent file for the given file, and deletes the file afterward
         :param file_name: str
         :param ip: str
         :return: json
-        '''
+        """
 
         # create Torrent object
         tname = f"{file_name}.torrent"
@@ -44,22 +44,22 @@ class TorrentHandlerServer:
 
     @staticmethod
     def _encrypt(data):
-        '''
+        """
         get data, return its hash
         :param data: str
         :return: str
-        '''
+        """
         hasher = hashlib.md5()
         hasher.update(data)
         return hasher.hexdigest()
 
     @staticmethod
     def _pad_chunk(data):
-        '''
+        """
         padding the given data to be 1024 bytes
         :param data: bytes
         :return: tuple
-        '''
+        """
         # flag - did pad the data or not
         not_added = True
         if len(data) < 1024:
@@ -71,11 +71,11 @@ class TorrentHandlerServer:
 
     @staticmethod
     def _break_file(path):
-        '''
+        """
         returns list of the data in the file, splited for chunks of 1024
         :param path: str
         :return: list
-        '''
+        """
         chunks = []
         read_data = True
         with open(path, 'rb') as file:
@@ -87,21 +87,21 @@ class TorrentHandlerServer:
 
     @staticmethod
     def _get_whole_hash(file_name):
-        '''
+        """
         returns the hash for the whole data in the file
         :param file_name: str
         :return: str
-        '''
+        """
         with open(file_name, 'rb') as file:
             data = file.read()
         return TorrentHandlerServer._encrypt(data)
 
     @staticmethod
     def _get_parts_hash(file_name):
-        '''
+        """
         returns list of hashes for each part of the file
         :return: list
-        '''
+        """
         chunks = TorrentHandlerServer._break_file(file_name)
         hash_list = []
         for c in chunks:
@@ -110,13 +110,13 @@ class TorrentHandlerServer:
 
     # @staticmethod
     # def update_ip_list(tname, ip, status=0):
-    #     '''
+    #     """
     #     updates the ip list according to the status, in the given torrent file
     #     :param tname: str
     #     :param ip: str
     #     :param status: int
     #     :return: json
-    #     '''
+    #     """
     #     with open(tname, 'r') as file:
     #         t_data = json.loads(file.read())
     #

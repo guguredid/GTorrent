@@ -9,11 +9,11 @@ import json
 
 
 def handle_files(q):
-    '''
+    """
     handles the queue for uploading files to the system.
     :param q: Queue
     :return: None
-    '''
+    """
     global server_by_ip
     local_db = DB("GTorrent")
     while True:

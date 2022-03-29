@@ -4,40 +4,38 @@ from classes.ClientProtocol import ClientProtocol
 from classes.Client import Client
 from classes.Server import Server
 from Graphics import MyFrame
+from generalSetting import TORRENT_SENDER_ADDRESS, FILES_ROOT
+from datetime import datetime
 from pubsub import pub
-from generalSetting import FILES_ROOT
-from generalSetting import TORRENT_SENDER_ADDRESS
-import socket
-import threading
-import sys
-import hashlib
-import queue
-import os
 import win32file
 import win32con
+import hashlib
+import threading
+import socket
+# import sys
 import shutil
-from datetime import datetime
+import queue
+import os
 import wx
 
 
-
 def encrypt(data):
-    '''
+    """
     get data, return its hash
     :param data: str
     :return: str
-    '''
+    """
     hasher = hashlib.md5()
     hasher.update(data)
     return hasher.hexdigest()
 
 
 def handle_msg_q(q):
-    '''
+    """
     handles the messages queue (for sending file parts)
     :param q: Queue
     :return: None
-    '''
+    """
     global file_server_client
     global files_in_system
     global tdata
@@ -151,13 +149,13 @@ def handle_msg_q(q):
 
 
 def handle_share(ip, id, q):
-    '''
+    """
     handles the connection with one sharing user
     :param ip: str
     :param id: int
     :param q: Queue
     :return: None
-    '''
+    """
     global file_event, chunks_to_write, chunks_busy, tname, hash_list, whole_hash
 
     current_chunk = ''
@@ -187,11 +185,10 @@ def handle_share(ip, id, q):
 
 
 def monitor_dir():
-    '''
+    """
     monitors changes in the files directory, and reports them
     :return: None
-    '''
-
+    """
     hDir = win32file.CreateFile(
         FILES_ROOT,
         win32con.FILE_SHARE_READ,
@@ -240,10 +237,11 @@ def monitor_dir():
 
 
 def handle_ui_events(message):
-    '''
+    """
     handles the events that occurs on the graphic (clicks on buttons)
+    :param message: str
     :return: None
-    '''
+    """
     global upload_name
     global DOWNLOAD_TO_ROOT
     global FILES_ROOT
@@ -279,9 +277,11 @@ def handle_ui_events(message):
 
 
 def download_file(download_name):
-    '''
+    """
     handles the download of a file
-    '''
+    :param download_name: str
+    :return: None
+    """
     global tdata
     global tname
     global chunks_to_write
@@ -380,9 +380,10 @@ def download_file(download_name):
 
 
 def upload_file():
-    '''
+    """
     handles the upload of a file
-    '''
+    :return: None
+    """
     global upload_name
 
     only_name = upload_name.split('\\')[-1]
@@ -409,7 +410,19 @@ def upload_file():
         wx.CallAfter(pub.sendMessage, "pop_up", message=f"You already have {only_name}...")
 
 
+def disconnect_file_server():
+    """
+    handles case when the server is down (needs to disconnect the file server to get new one when reconnecting)
+    :return: None
+    """
+    global file_server_client
+    if file_server_client is not None:
+        file_server_client.kill_client()
+        file_server_client = None
+
+
 pub.subscribe(handle_ui_events, "panel_listener")
+pub.subscribe(disconnect_file_server, "server_down")
 
 my_socket = socket.socket()
 file_socket = socket.socket()
@@ -427,7 +440,7 @@ threading.Thread(target=monitor_dir, daemon=True).start()
 # server for sending files parts for clients
 server = Server(2000, msg_q, 'files_server')
 # connecting to the server, receiving port for the file socket, receive list of files in the system, send files from the monitored folder
-server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q)
+server_client = Client(3000, TORRENT_SENDER_ADDRESS, msg_q, "main_server")
 
 # the root we download the files to
 DOWNLOAD_TO_ROOT = 'D:\\'

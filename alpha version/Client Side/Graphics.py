@@ -1,14 +1,13 @@
 from pubsub import pub
+import subprocess
 import wx.lib.scrolledpanel as scrolled
 import wx
-import os
-import subprocess
 
 
 class MyFrame(wx.Frame):
-    '''
+    """
     class representing the main window the GUI is going to be at
-    '''
+    """
 
     def __init__(self, parent=None):
         super(MyFrame, self).__init__(parent, title="GTorrent", size=wx.DisplaySize())
@@ -30,9 +29,9 @@ class MyFrame(wx.Frame):
 
 
 class MainPanel(wx.Panel):
-    '''
+    """
     class representing the main panel of the GUI
-    '''
+    """
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -51,9 +50,9 @@ class MainPanel(wx.Panel):
 
 
 class FilesPanel(wx.Panel):
-    '''
+    """
     class representing the main panel of the system
-    '''
+    """
 
     def __init__(self, parent, frame, download='D\\'):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
@@ -124,23 +123,20 @@ class FilesPanel(wx.Panel):
         changeDirBtn.SetToolTip("Change download directory")
         current_download_text = wx.StaticText(self, -1, label=f"Current download directory {self.download_root}: ")
         current_download_text.SetFont(self.titlefont)
-
+        # open download directory button
         open_download_dir_btn = wx.Button(self, id=1, label="Open", size=(60, 30), name="changeDir")
         open_download_dir_btn.Bind(wx.EVT_BUTTON, self.openDownloadDir)
         open_download_dir_btn.SetToolTip("Open Download Directory")
-
         download_sizer = wx.BoxSizer(wx.VERTICAL)
         download_sizer.Add(current_download_text)
         download_sizer.AddSpacer(5)
         download_sizer.Add(open_download_dir_btn, 0, wx.ALIGN_CENTER | wx.ALL, 0)
-
 
         # update the sizers
         self.bottom_buttons_sizer.Add(upBtn)
         self.bottom_buttons_sizer.AddSpacer(30)
         self.bottom_buttons_sizer.Add(changeDirBtn)
         self.bottom_buttons_sizer.AddSpacer(15)
-        # self.bottom_buttons_sizer.Add(current_download_text)
         self.bottom_buttons_sizer.Add(download_sizer)
 
         self.sizer.Add(self.bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
@@ -160,10 +156,10 @@ class FilesPanel(wx.Panel):
         pub.subscribe(self.popup, "pop_up")
 
     def add_file(self, filename):
-        '''
+        """
         adds file name to the scrolled bar
         :param filename: str
-        '''
+        """
         # sub sizer for each file
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -216,20 +212,20 @@ class FilesPanel(wx.Panel):
         self.scrollP.Layout()
 
     def remove_file(self, filename):
-        '''
+        """
         removes the file from the scrolled panel
         :param filename: str
-        '''
+        """
         self.file_sizers[filename].Clear(True)
 
         self.scrollP.Layout()
 
     def popup(self, message, flag=None):
-        '''
+        """
         pops the given message to the screen
         :param message: str
         :param flag: bool
-        '''
+        """
         # flag argument is used to tell if the pop up is related to a download, if not no need to change button's color
         # and is downloading status
         if flag:
@@ -241,11 +237,10 @@ class FilesPanel(wx.Panel):
         wx.MessageBox(message, " ", wx.OK)
 
     def file_selected(self, event):
-        '''
+        """
         handles case where one of the files' buttons is selected
         :param event: Event
-        '''
-        # print("IN GRAPHICS!!!", event.GetEventObject().GetName(), self.is_downloading)
+        """
         if not self.is_downloading:
             self.is_downloading = True
             self.popup("Downloading, please wait...")
@@ -257,10 +252,10 @@ class FilesPanel(wx.Panel):
             self.popup("Downloading already in process...")
 
     def uploadImage(self, event):
-        '''
+        """
         handles a case where the upload file button is clicked
         :param event: Event
-        '''
+        """
         openFileDialog = wx.FileDialog(self, "Open", "", "", "", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         openFileDialog.ShowModal()
         path = openFileDialog.GetPath()
@@ -270,10 +265,10 @@ class FilesPanel(wx.Panel):
             wx.CallAfter(pub.sendMessage, "panel_listener", message=f"2{path}")
 
     def updateDir(self, event):
-        '''
+        """
         handles change for the GTorrent's directory
         :param event: Event
-        '''
+        """
         if not self.is_downloading:
             openDirDialog = wx.DirDialog(None, "Choose input directory", "", wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST)
             openDirDialog.ShowModal()
@@ -294,11 +289,10 @@ class FilesPanel(wx.Panel):
             self.popup("Can't change download directory while downloading...")
 
     def openDownloadDir(self, event):
-        '''
+        """
         opens the current download directory
         :param event: Event
-        '''
-        # if os.path.exists(self.download_root)
+        """
         subprocess.Popen(f'explorer "{self.download_root}"')
 
 
