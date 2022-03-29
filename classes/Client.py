@@ -44,6 +44,7 @@ class Client:
 
         # while self.thread_running:
         while True:
+            self.my_socket = socket.socket()
             # first connection / try to reconnect if disconnection occurs
             try:
                 self.my_socket.connect((self.server_ip, self.server_port))
@@ -52,7 +53,6 @@ class Client:
                 self.disconnect()
             else:
                 self.running = True
-                print("CLIENTTTTTTT", self.running)
                 while self.running:
                 # while True:
                     try:
@@ -71,6 +71,20 @@ class Client:
                             else:
                                 self.msg_q.put((self.server_ip, msg))
                 print("MAIN LOOP STOPPED!!!")
+            # # try to reconnect
+            # if not self.running:
+            #     print(1111111)
+            #     self.my_socket = socket.socket()
+            #     while not self.running:
+            #         print(2222222)
+            #         # attempt to reconnect, otherwise sleep for 2 seconds
+            #         try:
+            #             self.my_socket.connect((self.server_ip, self.server_port))
+            #         except socket.error:
+            #             time.sleep(1)
+            #         else:
+            #             self.running = True
+            #             print("re-connection successful")
 
     def _recv_data(self, length):
         '''

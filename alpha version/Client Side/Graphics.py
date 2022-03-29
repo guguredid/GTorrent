@@ -1,6 +1,8 @@
 from pubsub import pub
 import wx.lib.scrolledpanel as scrolled
 import wx
+import os
+import subprocess
 
 
 class MyFrame(wx.Frame):
@@ -123,12 +125,23 @@ class FilesPanel(wx.Panel):
         current_download_text = wx.StaticText(self, -1, label=f"Current download directory {self.download_root}: ")
         current_download_text.SetFont(self.titlefont)
 
+        open_download_dir_btn = wx.Button(self, id=1, label="Open", size=(60, 30), name="changeDir")
+        open_download_dir_btn.Bind(wx.EVT_BUTTON, self.openDownloadDir)
+        open_download_dir_btn.SetToolTip("Open Download Directory")
+
+        download_sizer = wx.BoxSizer(wx.VERTICAL)
+        download_sizer.Add(current_download_text)
+        download_sizer.AddSpacer(5)
+        download_sizer.Add(open_download_dir_btn, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+
+
         # update the sizers
         self.bottom_buttons_sizer.Add(upBtn)
         self.bottom_buttons_sizer.AddSpacer(30)
         self.bottom_buttons_sizer.Add(changeDirBtn)
         self.bottom_buttons_sizer.AddSpacer(15)
-        self.bottom_buttons_sizer.Add(current_download_text)
+        # self.bottom_buttons_sizer.Add(current_download_text)
+        self.bottom_buttons_sizer.Add(download_sizer)
 
         self.sizer.Add(self.bottom_buttons_sizer, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
@@ -279,6 +292,14 @@ class FilesPanel(wx.Panel):
                 self.Sizer.Layout()
         else:
             self.popup("Can't change download directory while downloading...")
+
+    def openDownloadDir(self, event):
+        '''
+        opens the current download directory
+        :param event: Event
+        '''
+        # if os.path.exists(self.download_root)
+        subprocess.Popen(f'explorer "{self.download_root}"')
 
 
 if __name__ == '__main__':
