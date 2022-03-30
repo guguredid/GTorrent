@@ -42,6 +42,9 @@ def handle_msg_q(q):
     global tname
     global hash_list
     global DOWNLOAD_TO_ROOT
+    global is_first_connection
+    global my_files
+    global server_client
 
     while True:
         ip, curr_msg = q.get()
@@ -51,16 +54,22 @@ def handle_msg_q(q):
         code = curr_msg[:2].decode()
         info = curr_msg[2:]
 
+        # send files to the server
+        if code == '00':
+            print("SERVER-", server_client)
+            server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
+
         # receive files from the server
-        if code == '01':
+        elif code == '01':
             info = info.decode()
             files_in_system = ClientProtocol.break_files_in_system(info)
             files_in_system = [file.replace('.json', '') for file in files_in_system]
 
             # add the files in the system to the ui
             for file in files_in_system:
-                # if file not in my_files:
-                wx.CallAfter(pub.sendMessage, "add_file", filename=file)
+                # check if already added the file to the ui (in case there was reconnection)
+                if is_first_connection:
+                    wx.CallAfter(pub.sendMessage, "add_file", filename=file)
 
         # delete a file from the monitored folder
         elif code == '02':
@@ -145,6 +154,7 @@ def handle_msg_q(q):
         # receive port for file socket
         elif code == '20':
             port = int(info.decode())
+            print("RECIEVE NEW FILE PORT!, ", port)
             file_server_client = Client(port, TORRENT_SENDER_ADDRESS, msg_q)
 
 
@@ -416,8 +426,12 @@ def disconnect_file_server():
     :return: None
     """
     global file_server_client
+    global is_first_connection
+    print("SERVER IS DOWN, TRYING TO RECONNECT PLEASE WAIT")
+    is_first_connection = False
     if file_server_client is not None:
         file_server_client.kill_client()
+        wx.CallAfter(pub.sendMessage, "stop_threads")
         file_server_client = None
 
 
@@ -434,9 +448,6 @@ if not os.path.isdir(FILES_ROOT):
 # queue for messages from all connections
 msg_q = queue.Queue()
 
-threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
-threading.Thread(target=monitor_dir, daemon=True).start()
-
 # server for sending files parts for clients
 server = Server(2000, msg_q, 'files_server')
 # connecting to the server, receiving port for the file socket, receive list of files in the system, send files from the monitored folder
@@ -447,6 +458,8 @@ DOWNLOAD_TO_ROOT = 'D:\\'
 
 # flag - do we download something or not
 is_downloading = False
+# flag - is this connection the first one or not (was there reconnection or not)
+is_first_connection = True
 
 file_server_client = None
 
@@ -454,7 +467,7 @@ files_in_system = ''
 
 my_files = os.listdir(FILES_ROOT)
 print("THE FILES I HAVE::: ", my_files)
-server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
+# server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''
 tdata = '~'
@@ -465,6 +478,9 @@ thread_list = []
 
 chunks_to_write = []
 chunks_busy = []
+
+threading.Thread(target=handle_msg_q, args=(msg_q,), daemon=True).start()
+threading.Thread(target=monitor_dir, daemon=True).start()
 
 app = wx.App(False)
 frame = MyFrame()

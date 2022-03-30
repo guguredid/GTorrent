@@ -37,6 +37,8 @@ class Client:
         # flag - the object still running
         self.thread_running = True
 
+        pub.subscribe(self.stop_thread, "stop_threads")
+
         # start the threads responsible for connection with the server
         threading.Thread(target=self._main_loop, args=(), daemon=True).start()
         time.sleep(1)
@@ -48,17 +50,19 @@ class Client:
         :return: None
         """
 
-        while True:
+        # while True:
+        while self.thread_running:
             # reset the socket in case of disconnection from the server
             self.my_socket = socket.socket()
             # first connection / try to reconnect if disconnection occurs
             try:
                 self.my_socket.connect((self.server_ip, self.server_port))
             except Exception as e:
-                print(f"[ERROR] in main loop1 - {str(e)}")
+                print(f"[ERROR] in main loop1 - {str(e)} FOR PORT {self.server_port}")
                 self.disconnect()
             else:
                 self.running = True
+                self.msg_q.put((self.server_ip, "00".encode()))
                 # receive data from the server
                 while self.running:
                     try:
@@ -77,6 +81,7 @@ class Client:
                             else:
                                 self.msg_q.put((self.server_ip, msg))
                 print("MAIN LOOP STOPPED!!!")
+        print("STOP CLIENT IN PORT ", self.server_port)
 
     def _recv_data(self, length):
         """
@@ -109,7 +114,8 @@ class Client:
         :return: None
         """
 
-        while True:
+        # while True:
+        while self.thread_running:
             if self.running:
                 msg = self._send_msg_q.get()
                 if type(msg) is str:
@@ -151,8 +157,17 @@ class Client:
         disconnects from the server and kills all threads
         :return: None
         """
+        print(f"KILLING CLIENT IN PORT {self.server_port}")
         self.disconnect()
         parent_id = os.getpid()
         parent = psutil.Process(parent_id)
         for child in parent.children(recursive=True):
             child.kill()
+
+    def stop_thread(self):
+        """
+        stops the thread of the client
+        :return: None
+        """
+        print(f"STOPPING THREAD!!! {self.server_port}")
+        self.thread_running = False
