@@ -58,18 +58,28 @@ server_by_ip = {}   # dict for all file uploading servers (ip : Server)
 TORRENT_ROOT = 'D:\GTorrent\\'
 
 msg_q = queue.Queue()
-server = Server(3000, msg_q)
 
-threading.Thread(target=handle_files, args=(files_q, )).start()
 
 # create the database
 db = DB("GTorrent")
+db_files = db.get_torrents()
 # db.delete_torrent('')
 
-print(f"FILES IN DB: {db.get_torrents()}")
+print(f"FILES IN DB: {db_files}")
 
 if TORRENT_ROOT != '' and not os.path.exists(TORRENT_ROOT):
     os.mkdir(TORRENT_ROOT)
+
+# delete files not in the db
+my_files = os.listdir(TORRENT_ROOT)
+for file in my_files:
+    if file not in db_files:
+        print(f"REMOVING {file} from the system!!!")
+        os.remove(f"{TORRENT_ROOT}{file}")
+
+server = Server(3000, msg_q)
+
+threading.Thread(target=handle_files, args=(files_q,)).start()
 
 # main loop
 while True:
@@ -147,7 +157,6 @@ while True:
         # if the file is not in the system, tell the client to delete it
         if f'{file_name}.json' not in files_in_system:
             server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
-        #TODO: NEED TO REMOVE IT IF NOT!!!
 
     # receive a download was finished
     elif code == '06'.encode():
@@ -165,6 +174,7 @@ while True:
                 json.dump(torrent, file)
 
     # send torrent file
+    #TODO: IF THERE IS AN ERROR WITH THE FILE, REMOVE IT FROM THE SYSTEM???
     elif code == '07'.encode():
         tname = ServerProtocol.break_recv_torrent_name(info.decode())
         server.send_msg(ip, ServerProtocol.build_send_torrent(f"{TORRENT_ROOT}{tname}", server.get_ip_list()))
