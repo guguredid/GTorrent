@@ -75,7 +75,11 @@ my_files = os.listdir(TORRENT_ROOT)
 for file in my_files:
     if file not in db_files:
         print(f"REMOVING {file} from the system!!!")
-        os.remove(f"{TORRENT_ROOT}{file}")
+        # check if it's file or folder to remove
+        if '.' in file:
+            os.remove(f"{TORRENT_ROOT}{file}")
+        else:
+            os.rmdir(f"{TORRENT_ROOT}{file}")
 
 server = Server(3000, msg_q)
 

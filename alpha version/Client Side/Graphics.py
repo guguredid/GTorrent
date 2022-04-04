@@ -307,6 +307,7 @@ class FilesPanel(wx.Panel):
         opens the current download directory
         :param event: Event
         """
+        print("OPEN DIR ", self.download_root)
         subprocess.Popen(f'explorer "{self.download_root}"')
 
 
