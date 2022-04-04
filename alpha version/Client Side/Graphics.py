@@ -75,6 +75,13 @@ class FilesPanel(wx.Panel):
         # dictionary saving all the files' sizers in the scrolled panel
         self.file_sizers = {}
 
+        # help text sizer
+        help_sizer = wx.BoxSizer(wx.VERTICAL)
+        help_text = wx.StaticText(self, -1, label="Help:\nTo upload a file to the system, click on the file button.\nTo change the directory the file will be downloaded to, click on 'Change direcory' button.\nTo open this directory, click on 'Open' button.\nTo download a file from the system, click on the download image next to the file name.")
+        help_text.SetFont(self.titlefont)
+        help_sizer.AddSpacer(320)
+        help_sizer.Add(help_text, 0, wx.ALIGN_CENTER | wx.ALL, 0)
+
         # main sizer
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -148,7 +155,14 @@ class FilesPanel(wx.Panel):
         self.sizer.AddSpacer(30)
         self.sizer.Add(guy_text, 0, wx.ALIGN_CENTER | wx.ALL, 0)
 
-        self.SetSizer(self.sizer)
+        # main sizer
+        self.main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.main_sizer.AddSpacer(10)
+        self.main_sizer.Add(help_sizer)
+        self.main_sizer.AddSpacer(10)
+        self.main_sizer.Add(self.sizer)
+
+        self.SetSizer(self.main_sizer)
 
         # connect the UI with the logic via pubsub
         pub.subscribe(self.add_file, "add_file")

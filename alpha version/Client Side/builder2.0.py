@@ -428,6 +428,7 @@ def disconnect_file_server():
     global file_server_client
     global is_first_connection
     print("SERVER IS DOWN, TRYING TO RECONNECT PLEASE WAIT")
+    wx.CallAfter(pub.sendMessage, "pop_up", message=f"The server is down, trying to reconnect...")
     is_first_connection = False
     if file_server_client is not None:
         file_server_client.kill_client()
