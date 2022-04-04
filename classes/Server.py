@@ -31,7 +31,7 @@ class Server:
             self._used_ports = {'test': 1000}   # socket: port
             self.db = DB("GTorrent")
 
-        threading.Thread(target=self._main_loop).start()
+        threading.Thread(target=self._main_loop, daemon=True).start()
 
     def _main_loop(self):
         """
@@ -180,7 +180,7 @@ class Server:
         :return: None
         """
         for user_ip in self._users.values():
-            threading.Thread(target=self.send_msg, args=(user_ip, msg,)).start()
+            threading.Thread(target=self.send_msg, args=(user_ip, msg,), daemon=True).start()
 
     def send_part(self, ip, msg):
         """

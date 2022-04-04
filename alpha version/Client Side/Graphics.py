@@ -54,7 +54,7 @@ class FilesPanel(wx.Panel):
     class representing the main panel of the system
     """
 
-    def __init__(self, parent, frame, download='D\\'):
+    def __init__(self, parent, frame, download='D:\\'):
         wx.Panel.__init__(self, parent, pos=wx.DefaultPosition, size=wx.DisplaySize(), style=wx.SIMPLE_BORDER)
         self.frame = frame
         self.parent = parent
@@ -128,7 +128,7 @@ class FilesPanel(wx.Panel):
         changeDirBtn = wx.Button(self, id=1, label="Change Directory", size=(100, 75), name="changeDir")
         changeDirBtn.Bind(wx.EVT_BUTTON, self.updateDir)
         changeDirBtn.SetToolTip("Change download directory")
-        current_download_text = wx.StaticText(self, -1, label=f"Current download directory {self.download_root}: ")
+        current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root} ")
         current_download_text.SetFont(self.titlefont)
         # open download directory button
         open_download_dir_btn = wx.Button(self, id=1, label="Open", size=(60, 30), name="changeDir")

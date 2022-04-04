@@ -12,7 +12,7 @@ import win32con
 import hashlib
 import threading
 import socket
-# import sys
+import sys
 import shutil
 import queue
 import os
@@ -116,7 +116,7 @@ def handle_msg_q(q):
             # check if the ip is sharing or stopped sharing
             if status == 1:
                 print(f"{ip} CAN NOW SHARE THE FILE WE NEED!")
-                thread_list.append(threading.Thread(target=handle_share, args=(ip, len(thread_list)+1, msg_q)))
+                thread_list.append(threading.Thread(target=handle_share, args=(ip, len(thread_list)+1, msg_q), daemon=True))
                 thread_list[-1].start()
                 thread_list[-1].join()
             elif status == 0:
@@ -270,7 +270,7 @@ def handle_ui_events(message):
         print(f"ASKED TO DOWNLOAD FILE {info}")
         if not is_downloading:
             if info not in my_files:
-                threading.Thread(target=download_file, args=(info, )).start()
+                threading.Thread(target=download_file, args=(info, ), daemon=True).start()
             else:
                 # if already have the file, copy it to the monitored folder
                 print("ALREAADY HAVE FILE, COPYING IT")
@@ -386,7 +386,7 @@ def download_file(download_name):
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!", flag=True)
                 else:
                     print(88888888888888)
-                    # os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
+                    os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
             else:
