@@ -19,6 +19,9 @@ import os
 import wx
 
 
+from classes.TorrentHandlerServer import TorrentHandlerServer
+
+
 def encrypt(data):
     """
     get data, return its hash
@@ -355,11 +358,23 @@ def download_file(download_name):
             for thread in thread_list:
                 thread.join()
 
+            print(33333333333333333)
+
+
             # check if the download went ok - check the whole hash
             if os.path.exists(f'{DOWNLOAD_TO_ROOT}{tname}'):
+                print(55555555555555555555555555555555)
                 with open(f'{DOWNLOAD_TO_ROOT}{tname}', 'rb') as file:
                     whole_data = file.read().rstrip()
+
+                print(whole_data)
+
+
+                print("THE WHOLE HASE:::::", whole_hash)
+                print("THE WHOLE DATA:::::", encrypt(whole_data))
+
                 if encrypt(whole_data) == whole_hash:
+                    print(66666666666666666666666666)
                     print('THE FILE IS OK!')
                     server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
                     my_files.append(tname)
@@ -369,12 +384,13 @@ def download_file(download_name):
 
                     # popup that the file was created
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!", flag=True)
-
                 else:
-                    os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
+                    print(88888888888888)
+                    # os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
             else:
+                print(999999999999999999999999999)
                 # popup that the download failed
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
 
