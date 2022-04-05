@@ -65,36 +65,38 @@ class Server:
                         self.msg_q.put((self._get_ip_by_socket(client), msg.encode()))
                         # send the client a list of the files in the server
                         self.msg_q.put((self._get_ip_by_socket(client), '99'.encode()))
-                        # receive the files the client has
-                        try:
-                            client_files = client.recv(int(client.recv(10).decode())).decode()[2:]
-                        except Exception as e:
-                            print(f"ERROR IN SERVER - {str(e)}")
-                            self.close_client(self._users[client])
-                        else:
-                            # print(f"FILES THE CLIENT {address[0]} HAS: {client_files}")
-                            self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
+                        # # receive the files the client has
+                        # try:
+                        #     client_files = client.recv(int(client.recv(10).decode())).decode()[2:]
+                        # except Exception as e:
+                        #     print(f"ERROR IN SERVER - {str(e)}")
+                        #     self.close_client(self._users[client])
+                        # else:
+                        #     # print(f"FILES THE CLIENT {address[0]} HAS: {client_files}")
+                        #     self.msg_q.put((self._get_ip_by_socket(client), f'01{client_files}'.encode()))
                     # the server is not the main one (it's files server)
-                    else:
-                        # receive data from existing client
-                        data = ''
-                        try:
-                            length = client.recv(10).decode()
-                            # check if there is problem/disconnect
-                            if length == "":
-                                self._disconnect(client)
-                            else:
-                                data = self._recv_data(client, int(length))
-                        except Exception as e:
-                            print(f"[ERROR] in main loop0000 - {str(e)}")
-                            self._disconnect(client)
-                        else:
-                            # check if there is problem/disconnect
-                            if data == "":
-                                self._disconnect(client)
-                            # push the data we received to the queue
-                            else:
-                                self.msg_q.put((self._get_ip_by_socket(client), data))
+                    # else:
+                        # print("client connected!")
+                        # # receive data from existing client
+                        # data = ''
+                        # try:
+                        #     length = client.recv(10).decode()
+                        #     # check if there is problem/disconnect
+                        #     if length == "":
+                        #         self._disconnect(client)
+                        #     else:
+                        #         data = self._recv_data(client, int(length))
+                        # except Exception as e:
+                        #     print(f"[ERROR] in main loop0000 - {str(e)}")
+                        #     self._disconnect(client)
+                        # else:
+                        #     # check if there is problem/disconnect
+                        #     if data == "":
+                        #         self._disconnect(client)
+                        #     # push the data we received to the queue
+                        #     else:
+                        #         print("RECIEVE DATA ", data)
+                        #         self.msg_q.put((self._get_ip_by_socket(client), data))
                 else:
                     # receive data from existing client
                     try:
