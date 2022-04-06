@@ -15,6 +15,7 @@ import socket
 import sys
 import shutil
 import queue
+import time
 import os
 import wx
 
@@ -259,6 +260,7 @@ def handle_ui_events(message):
     global DOWNLOAD_TO_ROOT
     global FILES_ROOT
     global is_downloading
+    global is_connected_to_server
 
     code = message[0]
     info = message[1:]
@@ -268,21 +270,30 @@ def handle_ui_events(message):
     # asked to download a file
     if code == "1":
         print(f"ASKED TO DOWNLOAD FILE {info}")
-        if not is_downloading:
-            if info not in my_files:
-                threading.Thread(target=download_file, args=(info, ), daemon=True).start()
+        # check if connected to the server
+        if is_connected_to_server:
+            # check if not downloading already
+            if not is_downloading:
+                if info not in my_files:
+                    threading.Thread(target=download_file, args=(info, ), daemon=True).start()
+                else:
+                    # if already have the file, copy it to the monitored folder
+                    print("ALREAADY HAVE FILE, COPYING IT")
+                    shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"Copied the file to the wanted folder", flag=True)
             else:
-                # if already have the file, copy it to the monitored folder
-                print("ALREAADY HAVE FILE, COPYING IT")
-                shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
-                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Copied the file to the wanted folder", flag=True)
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"Another download is occurring at the moment...")
         else:
-            wx.CallAfter(pub.sendMessage, "pop_up", message=f"Another download is occurring at the moment...")
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"Not connected to the server currently...", flag=True)
     # asked to upload a file
     elif code == "2":
         print(f"ASKED TO UPLOAD FILE {info}")
         upload_name = info
-        upload_file()
+        # check if connected to the server
+        if is_connected_to_server:
+            upload_file()
+        else:
+            wx.CallAfter(pub.sendMessage, "pop_up", message=f"Can't upload a file, the server is down...")
     # asked to change directory
     elif code == "3":
         print(f"ASKED TO CHANGE DIR TO {info}")
@@ -443,18 +454,29 @@ def disconnect_file_server():
     """
     global file_server_client
     global is_first_connection
+    global is_connected_to_server
     print("SERVER IS DOWN, TRYING TO RECONNECT PLEASE WAIT")
     wx.CallAfter(pub.sendMessage, "pop_up", message=f"The server is down, trying to reconnect...")
     is_first_connection = False
+    is_connected_to_server = False
     if file_server_client is not None:
         file_server_client.kill_client()
         file_server_client.stop_thread()
         # wx.CallAfter(pub.sendMessage, "stop_threads")
         file_server_client = None
 
+def reconnection_to_server():
+    """
+    reconnect to the main server
+    :return: None
+    """
+    global is_connected_to_server
+    is_connected_to_server = True
+
 
 pub.subscribe(handle_ui_events, "panel_listener")
 pub.subscribe(disconnect_file_server, "server_down")
+pub.subscribe(reconnection_to_server, "reconnection")
 
 my_socket = socket.socket()
 file_socket = socket.socket()
@@ -478,6 +500,8 @@ DOWNLOAD_TO_ROOT = 'D:\\'
 is_downloading = False
 # flag - is this connection the first one or not (was there reconnection or not)
 is_first_connection = True
+# flag - is the client conencted to the server or not (to know if need to handle the ui and try to send stuff to the server)
+is_connected_to_server = True
 
 file_server_client = None
 

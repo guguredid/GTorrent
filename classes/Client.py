@@ -36,6 +36,8 @@ class Client:
         self.running = False
         # flag - the object still running
         self.thread_running = True
+        # flag - is the current connection to the server the first connection
+        self.first_conneciton = True
 
         # pub.subscribe(self.stop_thread, "stop_threads")
 
@@ -63,6 +65,9 @@ class Client:
             else:
                 self.running = True
                 self.msg_q.put((self.server_ip, "00".encode()))
+                # let the main client script know that the client connected to the user
+                if self.id == 'main_server' and not self.first_conneciton:
+                    wx.CallAfter(pub.sendMessage, "reconnection")
                 # receive data from the server
                 while self.running:
                     try:
@@ -147,6 +152,7 @@ class Client:
             wx.CallAfter(pub.sendMessage, "server_down")
         print("=======================DISCONNECTED")
         self.running = False
+        self.first_conneciton = False
         try:
             self.my_socket.close()
         except Exception as e:
