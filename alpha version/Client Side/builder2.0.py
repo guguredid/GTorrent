@@ -448,7 +448,8 @@ def disconnect_file_server():
     is_first_connection = False
     if file_server_client is not None:
         file_server_client.kill_client()
-        wx.CallAfter(pub.sendMessage, "stop_threads")
+        file_server_client.stop_thread()
+        # wx.CallAfter(pub.sendMessage, "stop_threads")
         file_server_client = None
 
 

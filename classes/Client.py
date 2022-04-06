@@ -37,7 +37,7 @@ class Client:
         # flag - the object still running
         self.thread_running = True
 
-        pub.subscribe(self.stop_thread, "stop_threads")
+        # pub.subscribe(self.stop_thread, "stop_threads")
 
         # start the threads responsible for connection with the server
         threading.Thread(target=self._main_loop, args=(), daemon=True).start()

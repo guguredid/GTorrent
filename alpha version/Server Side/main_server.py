@@ -109,20 +109,20 @@ while True:
         # check for files not in the system, if there are tell the client to delete them
         for f in client_files:
             if f"{f}.json" not in files_in_system:
-                print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
+                # print(f"THE CLIENT NEEDS TO DELETE {f}!!!!")
                 server.send_msg(ip, ServerProtocol.build_delete_file(f))
         # update existing torrent files if the file is deleted from the client
         for f in files_in_system:
             with open(f'{TORRENT_ROOT}\\{f}', 'r') as tFile:
                 torrent_data = tFile.read()
             if ip in torrent_data and f[:f.find('.json')] not in client_files:
-                print(f"REMOVING {ip} FROM {f}!!!!")
+                # print(f"REMOVING {ip} FROM {f}!!!!")
                 torrent_data = torrent_data.replace(ip, '')
                 # torrent_data = torrent_data.strip(';')
             #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
-            print(f"IP RIGHT NOW: {torrent_data.split('ip_list')[1]}")
+            # print(f"IP RIGHT NOW: {torrent_data.split('ip_list')[1]}")
             if len(torrent_data.split('ip_list')[1]) < len("255.255.255.255"):
-                print(f"REMOVING {f[:f.find('.json')]} FROM THE SYSTEM!- IN FIRST CONNECTION!")
+                # print(f"REMOVING {f[:f.find('.json')]} FROM THE SYSTEM!- IN FIRST CONNECTION!")
                 os.remove(f'{TORRENT_ROOT}{f}')
                 db.delete_torrent(f'{f}')
                 server.send_all(ServerProtocol.build_file_deleted(f[:f.find('.json')]))
@@ -134,13 +134,13 @@ while True:
     elif code == '02'.encode():
         files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_deleted_file(info.decode())
-        print(f"FILE {file_name} WAS DELETED FROM {ip}")
+        # print(f"FILE {file_name} WAS DELETED FROM {ip}")
         # update the relevant torrent file with the changes
         if f'{file_name}.json' in files_in_system:
             with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
                 torrent = json.load(file)
                 if ip in torrent["ip_list"]:
-                    print(f"REMOVING IP {ip} FROM {file_name}")
+                    # print(f"REMOVING IP {ip} FROM {file_name}")
                     torrent["ip_list"] = torrent["ip_list"].replace(ip, '')
                     torrent["ip_list"] = torrent["ip_list"].strip(';')
             # if there are no clients who can share the file, remove it from the system and let the connected users know
@@ -148,7 +148,7 @@ while True:
                 with open(f"{TORRENT_ROOT}{file_name}.json", 'w') as file:
                     json.dump(torrent, file)
             else:
-                print(f"REMOVING {file_name} FROM THE SYSTEM!")
+                # print(f"REMOVING {file_name} FROM THE SYSTEM!")
                 os.remove(f'{TORRENT_ROOT}{file_name}.json')
                 db.delete_torrent(f'{file_name}.json')
                 server.send_all(ServerProtocol.build_file_deleted(file_name))
@@ -157,7 +157,7 @@ while True:
     elif code == '03'.encode():
         files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_added_file(info.decode())
-        print(f"FILE {file_name} WAS ADDED TO {ip}")
+        # print(f"FILE {file_name} WAS ADDED TO {ip}")
         # if the file is not in the system, tell the client to delete it
         if f'{file_name}.json' not in files_in_system:
             server.send_msg(ip, ServerProtocol.build_delete_file(file_name))
@@ -166,7 +166,7 @@ while True:
     elif code == '06'.encode():
         files_in_system = db.get_torrents()
         file_name = ServerProtocol.break_recv_finish(info.decode())
-        print(f"FILE {file_name} WAS ADDED TO {ip} - HE FINISHED DOWNLOADING IT")
+        # print(f"FILE {file_name} WAS ADDED TO {ip} - HE FINISHED DOWNLOADING IT")
         # check if the file is in the system, if so update the relevant torrent file with the changes
         if f'{file_name}.json' in files_in_system:
             with open(f"{TORRENT_ROOT}{file_name}.json", 'r') as file:
