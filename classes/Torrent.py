@@ -63,18 +63,3 @@ class Torrent:
         :return: list
         """
         return self.ip_list
-
-    #TODO: DO I NEED THIS FUNCTION???
-    # def update_ip_list(self, ip, status=0):
-    #     '''
-    #     updates the ip list of the torrent
-    #     :param ip: str
-    #     :param status: int
-    #     :return: None
-    #     '''
-    #     # if the status is 0, delete the given ip
-    #     if status == 0 and ip in self.ip_list:
-    #         self.ip_list.remove(ip)
-    #     # if the status is 1, add the given ip
-    #     else:
-    #         self.ip_list.append(ip)

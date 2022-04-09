@@ -107,23 +107,3 @@ class TorrentHandlerServer:
         for c in chunks:
             hash_list.append(TorrentHandlerServer._encrypt(c))
         return hash_list
-
-    # @staticmethod
-    # def update_ip_list(tname, ip, status=0):
-    #     """
-    #     updates the ip list according to the status, in the given torrent file
-    #     :param tname: str
-    #     :param ip: str
-    #     :param status: int
-    #     :return: json
-    #     """
-    #     with open(tname, 'r') as file:
-    #         t_data = json.loads(file.read())
-    #
-    #     # if the status is 0, delete the given ip
-    #     if status == 0 and ip in t_data['ip_list']:
-    #         t_data['ip_list'].replace(ip, '')
-    #     # if the status is 1, add the given ip
-    #     else:
-    #         t_data['ip_list'] += f';{ip}'
-    #     return t_data

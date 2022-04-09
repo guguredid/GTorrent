@@ -106,16 +106,6 @@ class ClientProtocol:
         return f"07{tname.ljust(10)}"
 
     @staticmethod
-    def break_recv_torrent(data):
-        """
-        return a Torrent object from the data(?????)
-        :param data: str
-        :return: Torrent(???)
-        :return: str
-        """
-        pass
-
-    @staticmethod
     def break_update_ip(data):
         """
         return a tuple with data about the ip and its status (added\removed)
@@ -181,11 +171,3 @@ class ClientProtocol:
         :return: str
         """
         return data[2:].decode()
-
-    @staticmethod
-    def build_disconnect():
-        """
-        return a message for disconnecting from a sharer
-        :return: str
-        """
-        return "12"

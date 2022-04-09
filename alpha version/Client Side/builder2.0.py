@@ -111,17 +111,17 @@ def handle_msg_q(q):
             tdata = info.decode()
 
         # receive an update about ip address (for downloading)
-        elif code == '08':
-            ip, status = ClientProtocol.break_update_ip(info.decode())
-            print(f"RECEIVED UPDATE FOR {ip}======{status}")
-            # check if the ip is sharing or stopped sharing
-            if status == 1:
-                print(f"{ip} CAN NOW SHARE THE FILE WE NEED!")
-                thread_list.append(threading.Thread(target=handle_share, args=(ip, len(thread_list)+1, msg_q), daemon=True))
-                thread_list[-1].start()
-                thread_list[-1].join()
-            elif status == 0:
-                print(f"{ip} STOPPED SHARING THE FILE WE NEED!")
+        # elif code == '08':
+        #     ip, status = ClientProtocol.break_update_ip(info.decode())
+        #     print(f"RECEIVED UPDATE FOR {ip}======{status}")
+        #     # check if the ip is sharing or stopped sharing
+        #     if status == 1:
+        #         print(f"{ip} CAN NOW SHARE THE FILE WE NEED!")
+        #         thread_list.append(threading.Thread(target=handle_share, args=(ip, len(thread_list)+1, msg_q), daemon=True))
+        #         thread_list[-1].start()
+        #         thread_list[-1].join()
+        #     elif status == 0:
+        #         print(f"{ip} STOPPED SHARING THE FILE WE NEED!")
 
         # receive file was deleted from the server
         elif code == '09':
