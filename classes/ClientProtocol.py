@@ -76,7 +76,7 @@ class ClientProtocol:
         :param data: str
         :return: tuple
         """
-        return (data[:10].rstrip(), data[10:])
+        return data[:10].rstrip(), data[10:]
 
     @staticmethod
     def build_send_finish_download(file_name):
@@ -104,15 +104,6 @@ class ClientProtocol:
         :return: str
         """
         return f"07{tname.ljust(10)}"
-
-    @staticmethod
-    def break_update_ip(data):
-        """
-        return a tuple with data about the ip and its status (added\removed)
-        :param data: str
-        :return: tuple
-        """
-        return data[0], int(data[1:])
 
     @staticmethod
     def break_file_deleted(data):
@@ -161,7 +152,7 @@ class ClientProtocol:
         :param data: bytes
         :return: tuple
         """
-        return (data[2:12].decode().rstrip(), int(data[12:16]), data[16:])
+        return data[2:12].decode().rstrip(), int(data[12:16]), data[16:]
 
     @staticmethod
     def break_recv_port(data):

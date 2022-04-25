@@ -50,7 +50,6 @@ def handle_files(q):
                 server.send_all(ServerProtocol.build_send_file(f_name))
 
 
-
 files_q = queue.Queue()
 server_by_ip = {}   # dict for all file uploading servers (ip : Server)
 
@@ -119,8 +118,6 @@ while True:
                 # print(f"REMOVING {ip} FROM {f}!!!!")
                 torrent_data = torrent_data.replace(ip, '')
                 # torrent_data = torrent_data.strip(';')
-            #TODO: IF NO IP SHARING IS LEFT, REMOVE THE FILE FROM THE SYSTEM!
-            # print(f"IP RIGHT NOW: {torrent_data.split('ip_list')[1]}")
             if len(torrent_data.split('ip_list')[1]) < len("255.255.255.255"):
                 # print(f"REMOVING {f[:f.find('.json')]} FROM THE SYSTEM!- IN FIRST CONNECTION!")
                 os.remove(f'{TORRENT_ROOT}{f}')

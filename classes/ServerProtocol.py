@@ -152,14 +152,3 @@ class ServerProtocol:
         :return: str
         """
         return f"20{port}"
-
-    @staticmethod
-    def build_update_ip(ip, status):
-        """
-        return a message for updating a client that a new ip was added\removed to the sharing clients
-        :param ip: str
-        :param status: 1
-        :return: str
-        """
-        pass
-
