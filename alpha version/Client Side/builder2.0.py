@@ -409,6 +409,7 @@ def upload_file():
     :return: None
     """
     global upload_name
+    global files_in_system
 
     only_name = upload_name.split('\\')[-1]
     print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
@@ -416,15 +417,20 @@ def upload_file():
     if only_name not in my_files:
         # check if the path exist
         if os.path.exists(upload_name):
-            # check if the name is shorter then 10 letters
-            if len(only_name) < 10:
-                with open(upload_name, 'rb') as f:
-                    data = f.read()
-                if file_server_client is not None:
-                    file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
-            else:
+            # check if the file name is taken (another file with the same name exists)
+            if only_name in files_in_system:
                 # popup that the name is not valid
-                wx.CallAfter(pub.sendMessage, "pop_up", message=f"The file name must be shorter then 10 characters!")
+                wx.CallAfter(pub.sendMessage, "pop_up", message=f"The file name is already taken!")
+            else:
+                # check if the name is shorter then 10 letters
+                if len(only_name) < 10:
+                    with open(upload_name, 'rb') as f:
+                        data = f.read()
+                    if file_server_client is not None:
+                        file_server_client.send_msg(ClientProtocol.build_add_file_to_system(only_name, data))
+                else:
+                    # popup that the name is not valid
+                    wx.CallAfter(pub.sendMessage, "pop_up", message=f"The file name must be shorter then 10 characters!")
         else:
             print("Your file path is not valid...")
             # popup that the path is not valid
