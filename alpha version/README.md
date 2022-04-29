@@ -28,7 +28,7 @@
            files are stored. Changing the disk drive to C is not
            possible due to permissions.
         2. Run the "main_server.py" script and wait for clients
-        to connect.
+           to connect.
 * ##### Running the client:
         1. In "generalSetting.py", change the TORRENT_SERVER_ADDRESS
            to store the ip address of the server's computer as a
