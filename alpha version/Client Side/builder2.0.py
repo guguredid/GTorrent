@@ -335,8 +335,9 @@ def download_file(download_name):
             whole_hash = t.get_hash()
             ip_list = t.get_ip_list()
 
-            # check
-            print(1111111, tname, hash_list, chunks_num, ip_list)
+            # check ====772a07b1546d8934b9b35baf9a7c01aa
+            print(1111111, tname, hash_list, chunks_num, whole_hash, ip_list)
+
 
             # list of the chunks still needed
             chunks_to_write = [i for i in range(1, chunks_num + 1)]
@@ -363,7 +364,8 @@ def download_file(download_name):
             if os.path.exists(f'{DOWNLOAD_TO_ROOT}{tname}'):
                 print(55555555555555555555555555555555)
                 with open(f'{DOWNLOAD_TO_ROOT}{tname}', 'rb') as file:
-                    whole_data = file.read().rstrip()
+                    # whole_data = file.read().rstrip()
+                    whole_data = file.read()
 
                 print(whole_data)
 

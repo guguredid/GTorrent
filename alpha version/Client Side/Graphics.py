@@ -289,16 +289,19 @@ class FilesPanel(wx.Panel):
             path = openDirDialog.GetPath()
             openDirDialog.Destroy()
             if path:
-                # update the logic that the download path had changed
-                wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
-                # update the graphics that the download path had changed
-                self.download_root = path
-                current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
-                current_download_text.SetFont(self.titlefont)
-                self.bottom_buttons_sizer.Remove(4)
-                self.bottom_buttons_sizer.Add(current_download_text)
-                self.bottom_buttons_sizer.Layout()
-                self.Sizer.Layout()
+                if path.startswith("C:"):
+                    self.popup("Can't change directory to C due to permission issues, please choose drive...")
+                else:
+                    # update the logic that the download path had changed
+                    wx.CallAfter(pub.sendMessage, "panel_listener", message=f"3{path}")
+                    # update the graphics that the download path had changed
+                    self.download_root = path
+                    current_download_text = wx.StaticText(self, -1, label=f"Current download directory: {self.download_root}")
+                    current_download_text.SetFont(self.titlefont)
+                    self.bottom_buttons_sizer.Remove(4)
+                    self.bottom_buttons_sizer.Add(current_download_text)
+                    self.bottom_buttons_sizer.Layout()
+                    self.Sizer.Layout()
         else:
             self.popup("Can't change download directory while downloading...")
 
