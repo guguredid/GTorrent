@@ -45,7 +45,3 @@ Enjoy! :)
 ### Known bugs
     1. Uploading certain file to the system does't work from one
        computer while from another one it does work.
-    2. The complete hash received from the torrent file does'nt
-       match the hash we get after downloading the whole file,
-       even though the file is ok. It leads to "download failed"
-       message.
