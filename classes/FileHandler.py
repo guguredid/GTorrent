@@ -53,3 +53,6 @@ class FileHandler:
         with open(path, 'r+b') as file:
             file.seek(((num - 1) * 1024))
             file.write(data)
+
+        with open(path, 'rb') as file:
+            print("FILE LEN ", len(file.read()))

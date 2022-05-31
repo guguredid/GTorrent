@@ -94,7 +94,8 @@ class TorrentHandlerServer:
         """
         with open(file_name, 'rb') as file:
             data = file.read()
-        data += b' ' * (1024 - (len(data) % 1024))
+        if len(data) % 1024 != 0:
+            data += b' ' * (1024 - (len(data) % 1024))
         return TorrentHandlerServer._encrypt(data)
 
     @staticmethod
