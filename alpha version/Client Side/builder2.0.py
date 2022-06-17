@@ -60,7 +60,6 @@ def handle_msg_q(q):
 
         # send files to the server
         if code == '00':
-            print("SERVER-", server_client)
             server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
         # receive files from the server
@@ -99,7 +98,6 @@ def handle_msg_q(q):
         # receive new file that was added to the system
         elif code == '06':
             file_name = ClientProtocol.break_recv_new_file(info.decode())
-            print(f"NEW FILE ADDED TO THE SYSTEM: {file_name}")
 
             if file_name not in files_in_system:
                 files_in_system.append(file_name)
@@ -125,17 +123,13 @@ def handle_msg_q(q):
         # receive file part
         elif code == '11':
             file_name, current_chunk, chunk = ClientProtocol.break_recv_part(curr_msg)
-            print(222222, file_name, current_chunk)
             if encrypt(chunk) == hash_list[current_chunk - 1]:
-
                 # insert the chunk to the file
-                # FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}\\{tname}', chunk, current_chunk)
                 FileHandler.insert_part(f'{DOWNLOAD_TO_ROOT}{tname}', chunk, current_chunk)
 
                 if current_chunk in chunks_busy:
                     chunks_busy.remove(current_chunk)
             else:
-                print('THE HASH IS NOT OKAY!')
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {file_name} is not available at the moment...")
 
         # client disconnect from the sharing server
@@ -145,7 +139,6 @@ def handle_msg_q(q):
         # receive port for file socket
         elif code == '20':
             port = int(info.decode())
-            print("RECIEVE NEW FILE PORT!, ", port)
             file_server_client = Client(port, TORRENT_SENDER_ADDRESS, msg_q)
 
 
@@ -162,8 +155,6 @@ def handle_share(ip, id, q):
     current_chunk = ''
     client = Client(2000, ip, q)
 
-    print(f"CONNECTING TO {ip} AND ASKING FOR FILE {tname}")
-
     while len(chunks_to_write) > 0 or len(chunks_busy) > 0:
         if current_chunk not in chunks_busy:
             if len(chunks_to_write) > 0:
@@ -176,13 +167,11 @@ def handle_share(ip, id, q):
             client.send_msg(msg)
             # if the client disconnect, stop the download
         elif not client.is_running():
-            print("DOWNLOAD STOP! ERROR!")
             break
         else:
             pass
     # client.disconnect()
     client.kill_client()
-    print(f"THREAD {id} FINISHED!")
 
 
 def monitor_dir():
@@ -222,18 +211,15 @@ def monitor_dir():
 
         # 1 : created file
         if results[0][0] == 1:
-            print(f' - Created file - {results[0][1]}')
             msg = ClientProtocol.build_add_file(results[0][1])
         # 2 : deleted file
         elif results[0][0] == 2:
-            print(f' - Deleted file - {results[0][1]}')
             if results[0][1] in my_files:
                 my_files.remove(results[0][1])
             msg = ClientProtocol.build_send_deleted_file(results[0][1])
 
         # print the LOG
         if msg != '':
-            print(f"SENDING TO SERVER MONITOR!! {msg}")
             server_client.send_msg(msg)
 
 
@@ -252,11 +238,8 @@ def handle_ui_events(message):
     code = message[0]
     info = message[1:]
 
-    print(f"FROM UI - {code}:{info}")
-
     # asked to download a file
     if code == "1":
-        print(f"ASKED TO DOWNLOAD FILE {info}")
         # check if connected to the server
         if is_connected_to_server:
             # check if not downloading already
@@ -265,7 +248,6 @@ def handle_ui_events(message):
                     threading.Thread(target=download_file, args=(info, ), daemon=True).start()
                 else:
                     # if already have the file, copy it to the monitored folder
-                    print("ALREAADY HAVE FILE, COPYING IT")
                     shutil.copyfile(f"{FILES_ROOT}{info}", f'{DOWNLOAD_TO_ROOT}{info}')
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Copied the file to the wanted folder", flag=True)
             else:
@@ -274,7 +256,6 @@ def handle_ui_events(message):
             wx.CallAfter(pub.sendMessage, "pop_up", message=f"Not connected to the server currently...", flag=True)
     # asked to upload a file
     elif code == "2":
-        print(f"ASKED TO UPLOAD FILE {info}")
         upload_name = info
         # check if connected to the server
         if is_connected_to_server:
@@ -283,7 +264,6 @@ def handle_ui_events(message):
             wx.CallAfter(pub.sendMessage, "pop_up", message=f"Can't upload a file, the server is down...")
     # asked to change directory
     elif code == "3":
-        print(f"ASKED TO CHANGE DIR TO {info}")
         DOWNLOAD_TO_ROOT = f"{info}\\"
 
 
@@ -315,14 +295,11 @@ def download_file(download_name):
         print('waiting for torrent...')
 
     if tdata == '!':
-        print("Downloading the file is not available at the moment...")
         wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {download_name} is not available at the moment...", flag=True)
 
     elif tdata != '':
-        print(f"RECEIVED TDATA {tdata}====={len(tdata)}")
         t = Torrent(tdata)
         if not t.is_ok():
-            print("There was an error with the torrent file...")
             # popup that there was a problem with the connection to the server
             wx.CallAfter(pub.sendMessage, "pop_up", message="There was an error with the torrent file...", flag=True)
         else:
@@ -334,9 +311,6 @@ def download_file(download_name):
             chunks_num = len(hash_list)
             whole_hash = t.get_hash()
             ip_list = t.get_ip_list()
-
-            # check ====772a07b1546d8934b9b35baf9a7c01aa
-            print(1111111, tname, hash_list, chunks_num, whole_hash, ip_list)
 
 
             # list of the chunks still needed
@@ -357,25 +331,14 @@ def download_file(download_name):
             for thread in thread_list:
                 thread.join()
 
-            print(33333333333333333)
-
 
             # check if the download went ok - check the whole hash
             if os.path.exists(f'{DOWNLOAD_TO_ROOT}{tname}'):
-                print(55555555555555555555555555555555)
                 with open(f'{DOWNLOAD_TO_ROOT}{tname}', 'rb') as file:
                     # whole_data = file.read().rstrip()
                     whole_data = file.read()
 
-                print(len(whole_data))
-
-
-                print("THE WHOLE HASE:::::", whole_hash)
-                print("THE WHOLE DATA:::::", encrypt(whole_data))
-
                 if encrypt(whole_data) == whole_hash:
-                    print(66666666666666666666666666)
-                    print('THE FILE IS OK!')
                     server_client.send_msg(ClientProtocol.build_send_finish_download(tname))
                     my_files.append(tname)
 
@@ -385,12 +348,10 @@ def download_file(download_name):
                     # popup that the file was created
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!", flag=True)
                 else:
-                    print(88888888888888)
-                    # os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
+                    os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
             else:
-                print(999999999999999999999999999)
                 # popup that the download failed
                 wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
 
@@ -414,7 +375,6 @@ def upload_file():
     global files_in_system
 
     only_name = upload_name.split('\\')[-1]
-    print(f"THE FILE NAME ONLY IS ", upload_name.split('\\')[-1])
     # check if uploaded the file already
     if only_name not in my_files:
         # check if the path exist
@@ -434,7 +394,6 @@ def upload_file():
                     # popup that the name is not valid
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"The file name must be shorter then 10 characters!")
         else:
-            print("Your file path is not valid...")
             # popup that the path is not valid
             wx.CallAfter(pub.sendMessage, "pop_up", message=f"Your file path is not valid...")
     else:
@@ -450,7 +409,6 @@ def disconnect_file_server():
     global file_server_client
     global is_first_connection
     global is_connected_to_server
-    print("SERVER IS DOWN, TRYING TO RECONNECT PLEASE WAIT")
     wx.CallAfter(pub.sendMessage, "pop_up", message=f"The server is down, trying to reconnect...")
     is_first_connection = False
     is_connected_to_server = False
@@ -503,7 +461,6 @@ file_server_client = None
 files_in_system = ''
 
 my_files = os.listdir(FILES_ROOT)
-print("THE FILES I HAVE::: ", my_files)
 # server_client.send_msg(ClientProtocol.build_send_file_names(my_files))
 
 tname = ''

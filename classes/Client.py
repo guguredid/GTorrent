@@ -39,8 +39,6 @@ class Client:
         # flag - is the current connection to the server the first connection
         self.first_conneciton = True
 
-        # pub.subscribe(self.stop_thread, "stop_threads")
-
         # start the threads responsible for connection with the server
         threading.Thread(target=self._main_loop, args=(), daemon=True).start()
         time.sleep(1)
@@ -85,7 +83,6 @@ class Client:
                                 self.disconnect()
                             else:
                                 self.msg_q.put((self.server_ip, msg))
-                print("MAIN LOOP STOPPED!!!")
         print("STOP CLIENT IN PORT ", self.server_port)
 
     def _recv_data(self, length):
@@ -163,7 +160,6 @@ class Client:
         disconnects from the server and kills all threads
         :return: None
         """
-        print(f"KILLING CLIENT IN PORT {self.server_port}")
         self.disconnect()
         parent_id = os.getpid()
         parent = psutil.Process(parent_id)
@@ -175,5 +171,4 @@ class Client:
         stops the thread of the client
         :return: None
         """
-        print(f"STOPPING THREAD!!! {self.server_port}")
         self.thread_running = False
