@@ -367,7 +367,7 @@ def download_file(download_name):
                     # whole_data = file.read().rstrip()
                     whole_data = file.read()
 
-                print(whole_data)
+                print(len(whole_data))
 
 
                 print("THE WHOLE HASE:::::", whole_hash)
@@ -386,7 +386,7 @@ def download_file(download_name):
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"Downloading {tname} has succeeded!", flag=True)
                 else:
                     print(88888888888888)
-                    os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
+                    # os.remove(f'{DOWNLOAD_TO_ROOT}{tname}')
                     # popup that the download failed
                     wx.CallAfter(pub.sendMessage, "pop_up", message=f"There was an error while downloading {tname}...", flag=True)
             else:
